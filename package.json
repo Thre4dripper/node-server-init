@@ -1,0 +1,30 @@
+{
+  "name": "emc",
+  "version": "1.0.0",
+  "description": "cli tool for initializing backend projects",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node index.ts",
+    "dev": "nodemon index.ts",
+    "preview": "node dist/index.js"
+  },
+  "keywords": [
+    "cli",
+    "backend",
+    "express",
+    "mongoose",
+    "mongodb",
+    "node"
+  ],
+  "author": "Ijlal Ahmad",
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^0.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
