@@ -1,5 +1,5 @@
 {
-  "name": "emc",
+  "name": "node-initializer",
   "version": "1.0.0",
   "description": "cli tool for initializing backend projects",
   "main": "dist/index.js",

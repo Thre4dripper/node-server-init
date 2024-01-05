@@ -1,14 +1,11 @@
 import { initPrompts } from "./src/prompts";
+import { install } from "./src/installScript";
 
-const main = async () => {
-    const projectConfig = await initPrompts();
+;(async () => {
+    const projectConfig = await initPrompts(false);
 
-    console.log(projectConfig);
-}
-
-main().then(() => {
-    process.exit(0);
-}).catch((err) => {
-    console.error(err);
-    process.exit(1);
-})
+    if (!projectConfig) {
+        return;
+    }
+    await install(projectConfig);
+})()

@@ -1,14 +1,28 @@
-import { cancel, confirm, intro, isCancel, log, multiselect, note, select, text } from "@clack/prompts";
+import { confirm, intro, isCancel, log, multiselect, note, outro, select, text } from "@clack/prompts";
 import { ApiType, Database, InstallationType, ProjectType } from "./enums";
 import { Apis, ProjectConfig } from "./interfaces";
 
-export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
-    intro("Welcome to EMC CLI tool");
+const startPromptSession = () => {
+    intro("Welcome to Node Initializer CLI tool");
 
     note(
         "This tool will help you to setup backend project with express, mongoose, socket.io, swagger, docker and more.",
         "Press Ctrl+C to cancel."
     );
+}
+
+const endPromptSession = () => {
+    note(
+        "This tool will now install dependencies, configure your project, and do other fancy things.",
+        "Press Ctrl+C to cancel."
+    );
+
+    outro("Thank you for using Node Initializer");
+}
+export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | undefined> => {
+
+    if (!restarted)
+        startPromptSession();
 
     const projectName = await text({
         message: "What is your project name?",
@@ -22,7 +36,7 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(projectName)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
@@ -37,12 +51,14 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(installationType)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
 
     if (installationType === InstallationType.All) {
+        endPromptSession();
+
         return {
             projectName: projectName as string,
             installationType: installationType as InstallationType,
@@ -73,7 +89,7 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(projectType)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
@@ -91,7 +107,7 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(apiTypes)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
@@ -100,7 +116,7 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(socket)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
@@ -116,7 +132,7 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(database)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
@@ -125,7 +141,7 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(swagger)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
@@ -145,7 +161,7 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     }) : undefined;
 
     if (isCancel(swaggerPath)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
@@ -155,14 +171,11 @@ export const initPrompts = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(docker)) {
-        cancel("Cancelled by user");
+        log.warning("Cancelled by user");
         return await startOver();
     }
 
-    note(
-        "This tool will now install dependencies, configure your project, and do other fancy things.",
-        "Press Ctrl+C to cancel."
-    );
+    endPromptSession();
 
     return {
         projectName: projectName as string,
@@ -185,15 +198,13 @@ const startOver = async (): Promise<ProjectConfig | undefined> => {
     });
 
     if (isCancel(shouldStartOver)) {
-        cancel("Cancelled by user");
-        return await startOver();
+        log.warning("Exited from Node Initializer");
+        return;
     }
 
     if (shouldStartOver) {
-        return await initPrompts();
+        return await initPrompts(true);
     }
 
-    note(
-        "Thank you for using my CLI tool",
-    );
+    log.warning("Exited from Node Initializer");
 }
