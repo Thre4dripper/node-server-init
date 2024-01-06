@@ -1,6 +1,6 @@
 import { confirm, intro, isCancel, log, multiselect, note, outro, select, text } from '@clack/prompts'
 import { ApiType, Database, InstallationType, ProjectType } from './enums'
-import { Apis, ProjectConfig } from './interfaces'
+import { ProjectConfig } from './interfaces'
 import path from 'node:path'
 
 const startPromptSession = () => {
@@ -205,7 +205,11 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         projectName: projectName as string,
         installationType: installationType as InstallationType,
         projectType: projectType as ProjectType,
-        apis: apiTypes as Apis[],
+        apis: apiTypes.map((apiType) => {
+            return {
+                type: apiType as ApiType, require: true,
+            }
+        }),
         socket: socket as boolean,
         database: database as Database,
         swagger: {
