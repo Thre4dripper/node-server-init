@@ -19,14 +19,27 @@ import { spinner } from '@clack/prompts'
 // }
 
 export const install = async (projectConfig: ProjectConfig) => {
+    console.log(projectConfig)
     const s = spinner()
     s.start('Creating project folder')
     await createProjectFolder(projectConfig.projectLocation)
     s.stop('Created project folder')
+
+    s.start('Setting up project name')
+    await setupProjectName(projectConfig.projectLocation, projectConfig.projectName)
+    s.stop('Setup project name')
 }
 
 const createProjectFolder = async (projectLocation: string) => {
     const templateLocation = path.join(__dirname, '..', 'template')
     const projectFolder = path.join(projectLocation)
     await fs.cp(templateLocation, projectFolder, { recursive: true })
+}
+
+const setupProjectName = async (projectLocation: string, projectName: string) => {
+    const packageJsonLocation = path.join(projectLocation, 'package.json')
+    const packageJson = await fs.readFile(packageJsonLocation, 'utf8')
+    const packageJsonObj = JSON.parse(packageJson)
+    packageJsonObj.name = projectName
+    await fs.writeFile(packageJsonLocation, JSON.stringify(packageJsonObj, null, 2))
 }
