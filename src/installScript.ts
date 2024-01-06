@@ -4,7 +4,8 @@ import fs from 'fs/promises'
 import { spinner } from '@clack/prompts'
 // {
 //     projectLocation: 'C:\\Users\\ijlal\\Desktop\\New folder\\test',
-//         projectName: 'my-project',
+//     projectName: 'my-project',
+//     projectType: 'ts',
 //     installationType: 'all',
 //     apis: [
 //     { type: 'get', require: true },
@@ -14,6 +15,7 @@ import { spinner } from '@clack/prompts'
 //     { type: 'patch', require: true }
 // ],
 //     socket: true,
+//     database: 'mongo',
 //     swagger: { enabled: true, path: '/api-docs' },
 //     docker: true
 // }

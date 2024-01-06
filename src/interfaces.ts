@@ -8,8 +8,8 @@ export interface Apis {
 export interface ProjectConfig {
     projectLocation: string;
     projectName: string;
-    installationType: InstallationType
     projectType: ProjectType
+    installationType: InstallationType
     apis: Apis[]
     socket: boolean
     database: Database

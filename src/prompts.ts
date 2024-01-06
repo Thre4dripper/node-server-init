@@ -64,6 +64,19 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
 
     log.info('Use arrow keys to navigate. Press Enter to select.')
 
+    const projectType = await select({
+        message: 'Pick a project type.',
+        options: [
+            { value: ProjectType.Typescript, label: 'TypeScript', hint: 'Recommended' },
+            { value: ProjectType.Javascript, label: 'JavaScript' },
+        ],
+    })
+
+    if (isCancel(projectType)) {
+        log.warning('Cancelled by user')
+        return await startOver()
+    }
+
     const installationType = await select({
         message: 'Pick a installation type.',
         options: [
@@ -84,8 +97,8 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return {
             projectLocation: folderName,
             projectName: projectName as string,
-            installationType: installationType as InstallationType,
             projectType: ProjectType.Typescript,
+            installationType: installationType as InstallationType,
             apis: [
                 { type: ApiType.GET, require: true },
                 { type: ApiType.POST, require: true },
@@ -101,19 +114,6 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             },
             docker: true,
         }
-    }
-
-    const projectType = await select({
-        message: 'Pick a project type.',
-        options: [
-            { value: ProjectType.Typescript, label: 'TypeScript', hint: 'Recommended' },
-            { value: ProjectType.Javascript, label: 'JavaScript' },
-        ],
-    })
-
-    if (isCancel(projectType)) {
-        log.warning('Cancelled by user')
-        return await startOver()
     }
 
     log.info('Multiple options can be selected by pressing <space>. Press <a> to toggle all options.')
@@ -203,8 +203,8 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     return {
         projectLocation: folderName,
         projectName: projectName as string,
-        installationType: installationType as InstallationType,
         projectType: projectType as ProjectType,
+        installationType: installationType as InstallationType,
         apis: apiTypes.map((apiType) => {
             return {
                 type: apiType as ApiType, require: true,
