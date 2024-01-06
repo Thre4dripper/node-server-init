@@ -7,7 +7,11 @@
     "build": "tsc",
     "start": "ts-node index.ts",
     "dev": "nodemon index.ts",
-    "preview": "node dist/index.js"
+    "preview": "node dist/index.js",
+    "test": "yarn build && npm link && node-initializer"
+  },
+  "bin": {
+    "node-initializer": "./dist/index.js"
   },
   "keywords": [
     "cli",
