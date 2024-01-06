@@ -4,11 +4,10 @@
   "description": "cli tool for initializing backend projects",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cd dist && git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template template",
     "start": "ts-node index.ts",
     "dev": "nodemon index.ts",
-    "preview": "node dist/index.js",
-    "test": "yarn build && npm link && node-initializer"
+    "preview": "yarn build && npm link && node-initializer"
   },
   "bin": {
     "node-initializer": "./dist/index.js"

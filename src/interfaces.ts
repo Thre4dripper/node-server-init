@@ -6,6 +6,7 @@ export interface Apis {
 }
 
 export interface ProjectConfig {
+    projectLocation: string;
     projectName: string;
     installationType: InstallationType
     projectType: ProjectType
