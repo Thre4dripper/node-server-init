@@ -4,7 +4,7 @@
   "description": "cli tool for initializing backend projects",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && cd dist && git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template template && cd .. && node temp.js",
+    "build": "ts-node temp.ts",
     "start": "yarn preview",
     "dev": "nodemon index.ts",
     "preview": "yarn build && npm link && node-initializer"
@@ -23,10 +23,12 @@
   "author": "Ijlal Ahmad",
   "license": "MIT",
   "dependencies": {
-    "@clack/prompts": "^0.7.0"
+    "@clack/prompts": "^0.7.0",
+    "shelljs": "^0.8.5"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
+    "@types/shelljs": "^0.8.15",
     "nodemon": "^3.0.2",
     "prettier": "^3.1.1",
     "ts-node": "^10.9.2",

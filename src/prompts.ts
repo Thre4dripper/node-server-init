@@ -97,7 +97,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return {
             projectLocation: folderName,
             projectName: projectName as string,
-            projectType: ProjectType.Typescript,
+            projectType: projectType as ProjectType,
             installationType: installationType as InstallationType,
             apis: [
                 { type: ApiType.GET, require: true },
