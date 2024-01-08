@@ -4,10 +4,11 @@
   "description": "cli tool for initializing backend projects",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ts-node temp.ts",
+    "build": "tsc",
+    "build-local": "ts-node temp.ts",
     "start": "yarn preview",
     "dev": "nodemon index.ts",
-    "preview": "yarn build && npm link && node-initializer"
+    "preview": "yarn build-local && npm link && node-initializer"
   },
   "bin": {
     "node-initializer": "./dist/index.js"
