@@ -39,7 +39,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build
-          path: build
+          path: dist
       - name: Get Template
         run: |
           cd dist
