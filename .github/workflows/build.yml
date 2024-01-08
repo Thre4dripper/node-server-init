@@ -22,15 +22,19 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build
         run: yarn build
+      - name: List Files
+        run: ls -R
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: build
+          path: dist
   prepare-template:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
