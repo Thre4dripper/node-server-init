@@ -43,26 +43,3 @@ jobs:
           cd dist
           git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template.git template-typescript
           cd ..
-      - name: Make changes in tsconfig.json file
-        run: |
-          cd dist/template-typescript
-          echo "Changing target from ES6 to ESNext in tsconfig.json"
-          sed -i 's/"target": "ES6"/"target": "ESNext"/g' tsconfig.json
-          echo "Changing module from CommonJS to ESNext in tsconfig.json"
-          sed -i 's/"module": "CommonJS"/"module": "ESNext"/g' tsconfig.json
-          echo "Changing sourceMap from true to false in tsconfig.json"
-          sed -i 's/"sourceMap": true/"sourceMap": false/g' tsconfig.json
-          cat tsconfig.json
-      - name: Build template
-        run: |
-          cd dist/template-typescript
-          yarn install --frozen-lockfile
-          yarn build
-      - name: Copy generated files to make JavaScript template
-        run: |
-          cd dist/template-typescript
-          cp -r dist ../template-javascript
-      - name: List files
-        run: ls -R
-      - name: Cat in server.js
-        run: cat dist/template-javascript/src/server.js

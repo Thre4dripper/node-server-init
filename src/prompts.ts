@@ -77,6 +77,22 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return await startOver()
     }
 
+    const database = await select({
+        message: 'Pick a database.',
+        options: [
+            { value: Database.Mongo, label: 'MongoDB', hint: 'Recommended for beginners' },
+            { value: Database.Mysql, label: 'MySQL', hint: 'Recommended for production' },
+            { value: Database.Postgres, label: 'PostgreSQL', hint: 'Recommended for production' },
+            { value: Database.Sqlite, label: 'SQLite', hint: 'Recommended for testing' },
+            { value: Database.Mssql, label: 'MSSQL', hint: 'Recommended for production' },
+        ],
+    })
+
+    if (isCancel(database)) {
+        log.warning('Cancelled by user')
+        return await startOver()
+    }
+
     const installationType = await select({
         message: 'Pick a installation type.',
         options: [
@@ -98,6 +114,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             projectLocation: folderName,
             projectName: projectName as string,
             projectType: projectType as ProjectType,
+            database: database as Database,
             installationType: installationType as InstallationType,
             apis: [
                 { type: ApiType.GET, require: true },
@@ -107,7 +124,6 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
                 { type: ApiType.PATCH, require: true },
             ],
             socket: true,
-            database: Database.Mongo,
             swagger: {
                 enabled: true,
                 path: '/api-docs',
@@ -139,22 +155,6 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     })
 
     if (isCancel(socket)) {
-        log.warning('Cancelled by user')
-        return await startOver()
-    }
-
-    const database = await select({
-        message: 'Pick a database.',
-        options: [
-            { value: Database.Mongo, label: 'MongoDB', hint: 'Recommended for beginners' },
-            { value: Database.Mysql, label: 'MySQL', hint: 'Recommended for production' },
-            { value: Database.Postgres, label: 'PostgreSQL', hint: 'Recommended for production' },
-            { value: Database.Sqlite, label: 'SQLite', hint: 'Recommended for testing' },
-            { value: Database.Mssql, label: 'MSSQL', hint: 'Recommended for production' },
-        ],
-    })
-
-    if (isCancel(database)) {
         log.warning('Cancelled by user')
         return await startOver()
     }
@@ -204,6 +204,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         projectLocation: folderName,
         projectName: projectName as string,
         projectType: projectType as ProjectType,
+        database: database as Database,
         installationType: installationType as InstallationType,
         apis: apiTypes.map((apiType) => {
             return {
@@ -211,7 +212,6 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             }
         }),
         socket: socket as boolean,
-        database: database as Database,
         swagger: {
             enabled: swagger as boolean,
             path: swagger ? swaggerPath as string : undefined,

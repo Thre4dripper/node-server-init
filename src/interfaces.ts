@@ -9,10 +9,10 @@ export interface ProjectConfig {
     projectLocation: string;
     projectName: string;
     projectType: ProjectType
+    database: Database
     installationType: InstallationType
     apis: Apis[]
     socket: boolean
-    database: Database
     swagger: {
         enabled: boolean
         path?: string
