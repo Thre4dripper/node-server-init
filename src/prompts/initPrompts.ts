@@ -1,4 +1,14 @@
-import { confirm, intro, isCancel, log, multiselect, note, outro, select, text } from '@clack/prompts'
+import {
+    confirm,
+    intro,
+    isCancel,
+    log,
+    multiselect,
+    note,
+    outro,
+    select,
+    text,
+} from '@clack/prompts'
 import { ApiType, Database, InstallationType, ProjectType } from './enums'
 import { ProjectConfig } from './interfaces'
 import path from 'node:path'
@@ -8,20 +18,11 @@ const startPromptSession = () => {
 
     note(
         'This tool will help you to setup backend project with express, mongoose, socket.io, swagger, docker and more.',
-        'Press Ctrl+C to cancel.',
+        'Press Ctrl+C to cancel.'
     )
 }
 
-const endPromptSession = () => {
-    note(
-        'This tool will now install dependencies, configure your project, and do other fancy things.',
-        'Press Ctrl+C to cancel.',
-    )
-
-    outro('Thank you for using Node Initializer')
-}
 export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | undefined> => {
-
     //getting folder name from command line arguments
     let folderName
     if (process.argv.length <= 2) {
@@ -43,8 +44,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     }
 
     //flow starts here
-    if (!restarted)
-        startPromptSession()
+    if (!restarted) startPromptSession()
 
     const projectName = await text({
         message: 'What is your project name?',
@@ -110,10 +110,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return await startOver()
     }
 
-
     if (installationType === InstallationType.All) {
-        endPromptSession()
-
         return {
             projectLocation: folderName,
             projectName: projectName as string,
@@ -136,7 +133,9 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         }
     }
 
-    log.info('Multiple options can be selected by pressing <space>. Press <a> to toggle all options.')
+    log.info(
+        'Multiple options can be selected by pressing <space>. Press <a> to toggle all options.'
+    )
     const apiTypes = await multiselect({
         message: 'Select API types. (At least one is required)',
         options: [
@@ -172,26 +171,27 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return await startOver()
     }
 
-    const swaggerPath = swagger ? await text({
-        message: 'What is your swagger path?',
-        placeholder: '/swagger',
-        initialValue: '/swagger',
-        validate: (value) => {
-            if (value[0] !== '/') {
-                return 'Path must start with /'
-            }
-            const regex = /^\/[a-zA-Z0-9-_]+$/
-            if (!regex.test(value)) {
-                return 'Invalid path'
-            }
-        },
-    }) : undefined
+    const swaggerPath = swagger
+        ? await text({
+              message: 'What is your swagger path?',
+              placeholder: '/swagger',
+              initialValue: '/swagger',
+              validate: (value) => {
+                  if (value[0] !== '/') {
+                      return 'Path must start with /'
+                  }
+                  const regex = /^\/[a-zA-Z0-9-_]+$/
+                  if (!regex.test(value)) {
+                      return 'Invalid path'
+                  }
+              },
+          })
+        : undefined
 
     if (isCancel(swaggerPath)) {
         log.warning('Cancelled by user')
         return await startOver()
     }
-
 
     const docker = await confirm({
         message: 'Do you want to use docker?',
@@ -202,8 +202,6 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return await startOver()
     }
 
-    endPromptSession()
-
     return {
         projectLocation: folderName,
         projectName: projectName as string,
@@ -212,13 +210,14 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         installationType: installationType as InstallationType,
         apis: apiTypes.map((apiType) => {
             return {
-                type: apiType as ApiType, require: true,
+                type: apiType as ApiType,
+                require: true,
             }
         }),
         socket: socket as boolean,
         swagger: {
             enabled: swagger as boolean,
-            path: swagger ? swaggerPath as string : undefined,
+            path: swagger ? (swaggerPath as string) : undefined,
         },
         docker: docker as boolean,
     }

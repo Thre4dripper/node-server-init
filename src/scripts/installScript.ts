@@ -1,6 +1,6 @@
 import path from 'node:path'
 import fs from 'fs/promises'
-import { spinner } from '@clack/prompts'
+import { note, outro, spinner } from '@clack/prompts'
 import { ProjectConfig } from '../prompts/interfaces'
 import { Database } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
@@ -22,21 +22,29 @@ import SetupSequelize from './setupSequelize'
 //     swagger: { enabled: true, path: '/api-docs' },
 //     docker: true
 // }
+const endPromptSession = () => {
+    note(
+        'This tool will now install dependencies, configure your project, and do other fancy things.',
+        'Press Ctrl+C to cancel.'
+    )
 
+    outro('Thank you for using Node Initializer')
+}
 export const installScript = async (projectConfig: ProjectConfig) => {
-    console.log(projectConfig)
     const s = spinner()
     s.start('Creating project folder')
     await createProjectFolder(projectConfig.projectLocation)
-    // s.stop('Created project folder')
+    s.stop('Created project folder')
 
-    // s.start('Setting up project name')
+    s.start('Setting up project name')
     await setupProjectName(projectConfig.projectLocation, projectConfig.projectName)
-    // s.stop('Setup project name')
+    s.stop('Setup project name')
 
-    // s.start('Setting up project database')
+    s.start('Setting up project database')
     await setupProjectDatabase(projectConfig.projectLocation, projectConfig.database)
     s.stop('Setup project database')
+
+    endPromptSession()
 }
 
 const createProjectFolder = async (projectLocation: string) => {
