@@ -112,7 +112,35 @@ const setupMongo = async (projectLocation: string) => {
     const serverContents = await fs.readFile(server, 'utf8')
 
     const serverContentLines = serverContents.split('\n')
-    const linesToBeRemoved = [5, 19, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 32, 39]
+    // const linesToBeRemoved = [5, 19, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 32, 39]
+    const linesToBeRemoved: number[] = []
+    const sequelizeImportLineIndex = serverContentLines.findIndex(line => line.includes('sequelizeConnect'))
+    linesToBeRemoved.push(sequelizeImportLineIndex + 1)
+
+    //remove sequelize dialect valid check
+    const dialectValidLineStartIndex = serverContentLines.findIndex(line => line.includes('start if dialect valid'))
+    const dialectValidLineEndIndex = serverContentLines.findIndex(line => line.includes('end if dialect valid'))
+
+    for (let i = dialectValidLineStartIndex; i <= dialectValidLineEndIndex; i++) {
+        linesToBeRemoved.push(i + 1)
+    }
+
+    //remove sequelize dialect check for sequelize
+    const sequelizeDialectCheckStartIndex = serverContentLines.findIndex(line => line.includes('start if sequelize dialect check'))
+    const sequelizeDialectCheckEndIndex = serverContentLines.findIndex(line => line.includes('end if sequelize dialect check'))
+
+    for (let i = sequelizeDialectCheckStartIndex; i <= sequelizeDialectCheckEndIndex; i++) {
+        linesToBeRemoved.push(i + 1)
+    }
+
+    const mongooseDialectCheckStartIndex = serverContentLines.findIndex(line => line.includes('start if mongoose dialect check'))
+    const mongooseDialectCheckEndIndex = serverContentLines.findIndex(line => line.includes('end if mongoose dialect check'))
+
+    //removing mongoose dialect check if condition, start two lines and end two lines including comments
+    linesToBeRemoved.push(mongooseDialectCheckStartIndex + 1)
+    linesToBeRemoved.push(mongooseDialectCheckStartIndex + 2)
+    linesToBeRemoved.push(mongooseDialectCheckEndIndex)
+    linesToBeRemoved.push(mongooseDialectCheckEndIndex + 1)
 
     const filteredServerContentLines = serverContentLines.filter((_, index) => !linesToBeRemoved.includes(index + 1))
     const serverContentsModified = filteredServerContentLines.join('\n')
