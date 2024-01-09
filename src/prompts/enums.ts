@@ -21,5 +21,9 @@ export enum Database {
     Mysql = "mysql",
     Postgres = "postgres",
     Sqlite = "sqlite",
-    Mssql = "mssql"
+    Mssql = "mssql",
+    MariaDB = "mariadb",
+    DB2 = "db2",
+    Snowflake = "snowflake",
+    Oracle = "oracle",
 }

@@ -85,6 +85,10 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             { value: Database.Postgres, label: 'PostgreSQL', hint: 'Recommended for production' },
             { value: Database.Sqlite, label: 'SQLite', hint: 'Recommended for testing' },
             { value: Database.Mssql, label: 'MSSQL', hint: 'Recommended for production' },
+            { value: Database.MariaDB, label: 'MariaDB', hint: 'Recommended for production' },
+            { value: Database.DB2, label: 'DB2', hint: 'Recommended for production' },
+            { value: Database.Snowflake, label: 'Snowflake', hint: 'Recommended for production' },
+            { value: Database.Oracle, label: 'Oracle', hint: 'Recommended for production' },
         ],
     })
 

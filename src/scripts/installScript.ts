@@ -4,6 +4,7 @@ import { spinner } from '@clack/prompts'
 import { ProjectConfig } from '../prompts/interfaces'
 import { Database } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
+import SetupSequelize from './setupSequelize'
 // {
 //     projectLocation: 'C:\\Users\\ijlal\\Desktop\\New folder\\test',
 //     projectName: 'my-project',
@@ -55,5 +56,7 @@ const setupProjectName = async (projectLocation: string, projectName: string) =>
 const setupProjectDatabase = async (projectLocation: string, database: Database) => {
     if (database === Database.Mongo) {
         await SetupMongoose.init(projectLocation)
+    } else {
+        await SetupSequelize.init(projectLocation, database)
     }
 }

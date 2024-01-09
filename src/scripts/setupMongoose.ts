@@ -63,7 +63,8 @@ class SetupMongoose {
     private static async changeService(projectLocation: string) {
         const service = path.join(projectLocation, 'src', 'app', 'apis', 'user', 'services', 'user.service.ts')
         const serviceContents = await fs.readFile(service, 'utf8')
-        const serviceContentsModified = serviceContents.replace('import userRepository from \'../repositories/sequelize.user.repository\'', 'import userRepository from \'../repositories/user.repository\'')
+        const regex = /import userRepository from '..\/repositories\/.*.user.repository'/g
+        const serviceContentsModified = serviceContents.replace(regex, 'import userRepository from \'../repositories/user.repository\'')
         await fs.writeFile(service, serviceContentsModified)
     }
 
@@ -90,7 +91,7 @@ class SetupMongoose {
         const sequelizeImportLineIndex = serverContentLines.findIndex(line => line.includes('sequelizeConnect'))
         linesToBeRemoved.push(sequelizeImportLineIndex + 1)
 
-        //remove sequelize dialect valid check
+        //remove dialect valid check
         const dialectValidLineStartIndex = serverContentLines.findIndex(line => line.includes('start if dialect valid'))
         const dialectValidLineEndIndex = serverContentLines.findIndex(line => line.includes('end if dialect valid'))
 
@@ -107,11 +108,14 @@ class SetupMongoose {
         }
 
         const mongooseDialectCheckStartIndex = serverContentLines.findIndex(line => line.includes('start if mongoose dialect check'))
+        const mongooseDialectCheckStartIfLineIndex = serverContentLines.findIndex((line, index) => line.includes('{') && index > mongooseDialectCheckStartIndex)
         const mongooseDialectCheckEndIndex = serverContentLines.findIndex(line => line.includes('end if mongoose dialect check'))
 
-        //removing mongoose dialect check if condition, start two lines and end two lines including comments
-        linesToBeRemoved.push(mongooseDialectCheckStartIndex + 1)
-        linesToBeRemoved.push(mongooseDialectCheckStartIndex + 2)
+        //removing mongoose dialect check if condition
+        for (let i = mongooseDialectCheckStartIndex; i <= mongooseDialectCheckStartIfLineIndex; i++) {
+            linesToBeRemoved.push(i + 1)
+        }
+
         linesToBeRemoved.push(mongooseDialectCheckEndIndex)
         linesToBeRemoved.push(mongooseDialectCheckEndIndex + 1)
 
