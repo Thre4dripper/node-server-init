@@ -1,6 +1,5 @@
 import path from 'node:path'
 import fs from 'fs/promises'
-import shell from 'shelljs'
 import { getLatestVersion } from './utils'
 
 class SetupMongoose {
@@ -150,7 +149,6 @@ class SetupMongoose {
         const serverContents = await fs.readFile(server, 'utf8')
 
         const serverContentLines = serverContents.split('\n')
-        // const linesToBeRemoved = [5, 19, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 32, 39]
         const linesToBeRemoved: number[] = []
         const sequelizeImportLineIndex = serverContentLines.findIndex((line) =>
             line.includes('sequelizeConnect')

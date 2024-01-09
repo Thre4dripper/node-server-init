@@ -5,10 +5,12 @@ import { Apis, ProjectConfig } from '../prompts/interfaces'
 import { Database, InstallationType } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
 import SetupSequelize from './setupSequelize'
+import SetupSocket from './setupSocket'
 // {
 //     projectLocation: 'C:\\Users\\ijlal\\Desktop\\New folder\\test',
 //     projectName: 'my-project',
 //     projectType: 'ts',
+//     database: 'mongo',
 //     installationType: 'all',
 //     apis: [
 //     { type: 'get', require: true },
@@ -18,7 +20,6 @@ import SetupSequelize from './setupSequelize'
 //     { type: 'patch', require: true }
 // ],
 //     socket: true,
-//     database: 'mongo',
 //     swagger: { enabled: true, path: '/api-docs' },
 //     docker: true
 // }
@@ -53,6 +54,10 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         s.start('Setting up apis')
         await setupApis(projectConfig.projectLocation, projectConfig.apis)
         s.stop('Setup apis')
+
+        s.start('Setting up socket')
+        await setupSocket(projectConfig.projectLocation, projectConfig.socket)
+        s.stop('Setup socket')
         // endPromptSession()
     } catch (err) {
         console.log(err)
@@ -114,4 +119,8 @@ const setupApis = async (projectLocation: string, apis: Apis[]) => {
     const availableMethod = apis.filter((api) => api.require).map((api) => api.type)[0]
     const routesModified = routesContents.replace(/(get|post|put|delete|patch)\(/g, `${availableMethod}(`)
     await fs.writeFile(routesLocation, routesModified)
+}
+
+const setupSocket = async (projectLocation: string, socket: boolean) => {
+    await SetupSocket.init(projectLocation, socket)
 }
