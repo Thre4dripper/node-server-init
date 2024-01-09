@@ -45,6 +45,8 @@ class SetupMongoose {
         //remove sequelize dependencies
         delete packageJson.dependencies['pg-hstore']
         delete packageJson.dependencies['pg']
+        delete packageJson.dependencies['sequelize']
+        delete packageJson.dependencies['sequelize-typescript']
 
         await fs.writeFile(packageJsonLocation, JSON.stringify(packageJson, null, 2))
     }
