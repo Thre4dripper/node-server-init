@@ -1,8 +1,8 @@
 import path from 'node:path'
 import fs from 'fs/promises'
 import { note, outro, spinner } from '@clack/prompts'
-import { ProjectConfig } from '../prompts/interfaces'
-import { Database } from '../prompts/enums'
+import { Apis, ProjectConfig } from '../prompts/interfaces'
+import { Database, InstallationType } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
 import SetupSequelize from './setupSequelize'
 // {
@@ -25,26 +25,38 @@ import SetupSequelize from './setupSequelize'
 const endPromptSession = () => {
     note(
         'This tool will now install dependencies, configure your project, and do other fancy things.',
-        'Press Ctrl+C to cancel.'
+        'Press Ctrl+C to cancel.',
     )
 
     outro('Thank you for using Node Initializer')
 }
 export const installScript = async (projectConfig: ProjectConfig) => {
-    const s = spinner()
-    s.start('Creating project folder')
-    await createProjectFolder(projectConfig.projectLocation)
-    s.stop('Created project folder')
+    try {
 
-    s.start('Setting up project name')
-    await setupProjectName(projectConfig.projectLocation, projectConfig.projectName)
-    s.stop('Setup project name')
+        const s = spinner()
+        s.start('Creating project folder')
+        await createProjectFolder(projectConfig.projectLocation)
+        s.stop('Created project folder')
 
-    s.start('Setting up project database')
-    await setupProjectDatabase(projectConfig.projectLocation, projectConfig.database)
-    s.stop('Setup project database')
+        s.start('Setting up project name')
+        await setupProjectName(projectConfig.projectLocation, projectConfig.projectName)
+        s.stop('Setup project name')
 
-    endPromptSession()
+        s.start('Setting up project database')
+        await setupProjectDatabase(projectConfig.projectLocation, projectConfig.database)
+        s.stop('Setup project database')
+
+        if (projectConfig.installationType === InstallationType.All) {
+            return
+        }
+
+        s.start('Setting up apis')
+        await setupApis(projectConfig.projectLocation, projectConfig.apis)
+        s.stop('Setup apis')
+        // endPromptSession()
+    } catch (err) {
+        console.log(err)
+    }
 }
 
 const createProjectFolder = async (projectLocation: string) => {
@@ -67,4 +79,39 @@ const setupProjectDatabase = async (projectLocation: string, database: Database)
     } else {
         await SetupSequelize.init(projectLocation, database)
     }
+}
+
+const setupApis = async (projectLocation: string, apis: Apis[]) => {
+    const masterControllerLocation = path.join(projectLocation, 'src', 'app', 'utils', 'masterController.ts')
+    const masterControllerContents = await fs.readFile(masterControllerLocation, 'utf8')
+
+    const masterControllerLines = masterControllerContents.split('\n')
+
+    const linesToBeRemoved: number[] = []
+
+    //removing api controllers from master controller
+    apis.forEach((api) => {
+        if (!api.require) {
+            const apiDocStartLine = masterControllerLines.findIndex((line) => line.includes(`${api.type.toUpperCase()}`))
+            const apiStartLine = masterControllerLines.findIndex((line) => line.includes(`static ${api.type}(`))
+            const apiEndLine = masterControllerLines.findIndex((line, index) => line.includes('}') && index > apiStartLine)
+
+            for (let i = apiDocStartLine - 2; i <= apiEndLine; i++) {
+                linesToBeRemoved.push(i)
+            }
+        }
+    })
+
+    const filteredMasterControllerLines = masterControllerLines.filter((_, index) => !linesToBeRemoved.includes(index))
+
+    const masterControllerModified = filteredMasterControllerLines.join('\n')
+    await fs.writeFile(masterControllerLocation, masterControllerModified)
+
+    //changes in routes
+    const routesLocation = path.join(projectLocation, 'src', 'app', 'routes', 'user.router.ts')
+    const routesContents = await fs.readFile(routesLocation, 'utf8')
+
+    const availableMethod = apis.filter((api) => api.require).map((api) => api.type)[0]
+    const routesModified = routesContents.replace(/(get|post|put|delete|patch)\(/g, `${availableMethod}(`)
+    await fs.writeFile(routesLocation, routesModified)
 }

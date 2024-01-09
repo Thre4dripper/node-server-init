@@ -18,7 +18,7 @@ const startPromptSession = () => {
 
     note(
         'This tool will help you to setup backend project with express, mongoose, socket.io, swagger, docker and more.',
-        'Press Ctrl+C to cancel.'
+        'Press Ctrl+C to cancel.',
     )
 }
 
@@ -134,7 +134,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     }
 
     log.info(
-        'Multiple options can be selected by pressing <space>. Press <a> to toggle all options.'
+        'Multiple options can be selected by pressing <space>. Press <a> to toggle all options.',
     )
     const apiTypes = await multiselect({
         message: 'Select API types. (At least one is required)',
@@ -173,19 +173,19 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
 
     const swaggerPath = swagger
         ? await text({
-              message: 'What is your swagger path?',
-              placeholder: '/swagger',
-              initialValue: '/swagger',
-              validate: (value) => {
-                  if (value[0] !== '/') {
-                      return 'Path must start with /'
-                  }
-                  const regex = /^\/[a-zA-Z0-9-_]+$/
-                  if (!regex.test(value)) {
-                      return 'Invalid path'
-                  }
-              },
-          })
+            message: 'What is your swagger path?',
+            placeholder: '/swagger',
+            initialValue: '/swagger',
+            validate: (value) => {
+                if (value[0] !== '/') {
+                    return 'Path must start with /'
+                }
+                const regex = /^\/[a-zA-Z0-9-_]+$/
+                if (!regex.test(value)) {
+                    return 'Invalid path'
+                }
+            },
+        })
         : undefined
 
     if (isCancel(swaggerPath)) {
@@ -208,10 +208,10 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         projectType: projectType as ProjectType,
         database: database as Database,
         installationType: installationType as InstallationType,
-        apis: apiTypes.map((apiType) => {
+        apis: Object.values(ApiType).map((apiType) => {
             return {
                 type: apiType as ApiType,
-                require: true,
+                require: apiTypes.includes(apiType),
             }
         }),
         socket: socket as boolean,
