@@ -119,6 +119,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "template"
+    "template*",
+    "temp.ts"
   ]
 }

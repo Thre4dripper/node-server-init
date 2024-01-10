@@ -64,18 +64,18 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
 
     log.info('Use arrow keys to navigate. Press Enter to select.')
 
-    const projectType = await select({
-        message: 'Pick a project type.',
-        options: [
-            { value: ProjectType.Typescript, label: 'TypeScript', hint: 'Recommended' },
-            { value: ProjectType.Javascript, label: 'JavaScript' },
-        ],
-    })
-
-    if (isCancel(projectType)) {
-        log.warning('Cancelled by user')
-        return await startOver()
-    }
+    // const projectType = await select({
+    //     message: 'Pick a project type.',
+    //     options: [
+    //         { value: ProjectType.Typescript, label: 'TypeScript', hint: 'Recommended' },
+    //         { value: ProjectType.Javascript, label: 'JavaScript' },
+    //     ],
+    // })
+    //
+    // if (isCancel(projectType)) {
+    //     log.warning('Cancelled by user')
+    //     return await startOver()
+    // }
 
     const database = await select({
         message: 'Pick a database.',
@@ -114,7 +114,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return {
             projectLocation: folderName,
             projectName: projectName as string,
-            projectType: projectType as ProjectType,
+            projectType: ProjectType.Typescript,
             database: database as Database,
             installationType: installationType as InstallationType,
             apis: [
@@ -205,7 +205,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     return {
         projectLocation: folderName,
         projectName: projectName as string,
-        projectType: projectType as ProjectType,
+        projectType: ProjectType.Typescript,
         database: database as Database,
         installationType: installationType as InstallationType,
         apis: Object.values(ApiType).map((apiType) => {
