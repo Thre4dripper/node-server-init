@@ -10,7 +10,7 @@ import shell from 'shelljs'
     shell.cd('dist')
     shell.exec('git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template template-typescript')
     //remove git
-    shell.cd('template')
+    shell.cd('template-typescript')
     shell.rm('-rf', '.git')
 
     //remove template folder

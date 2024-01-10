@@ -1,18 +1,18 @@
 {
   "name": "node-server-init",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "cli tool for initializing service based backend projects",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Thre4dripper/node-initializer.git"
+    "url": "https://github.com/Thre4dripper/node-server-init.git"
   },
   "scripts": {
     "build": "tsc",
     "build-local": "ts-node temp.ts",
     "start": "yarn preview",
     "dev": "nodemon index.ts",
-    "preview": "yarn build-local && npm link && node-initializer"
+    "preview": "yarn build-local && npm link && node-server-init"
   },
   "bin": {
     "node-initializer": "./dist/index.js"
