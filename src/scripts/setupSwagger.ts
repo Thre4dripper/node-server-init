@@ -33,8 +33,13 @@ class SetupSwagger {
     }
 
     private static async deleteSwaggerConfig(projectLocation: string) {
+        // remove swagger config
         const swaggerConfig = path.join(projectLocation, 'src', 'config', 'swaggerConfig.ts')
         await fs.rm(swaggerConfig)
+
+        // remove swagger.json
+        const swaggerJson = path.join(projectLocation, 'swagger.json')
+        await fs.rm(swaggerJson)
     }
 
     private static async removeFromExpressConfig(projectLocation: string) {

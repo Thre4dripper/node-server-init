@@ -63,6 +63,10 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         s.start('Setting up swagger')
         await setupSwagger(projectConfig.projectLocation, projectConfig.swagger)
         s.stop('Setup swagger')
+
+        s.start('Setting up docker')
+        await setupDocker(projectConfig.projectLocation, projectConfig.docker)
+        s.stop('Setup docker')
         // endPromptSession()
     } catch (err) {
         console.log(err)
@@ -132,4 +136,20 @@ const setupSocket = async (projectLocation: string, socket: boolean) => {
 
 const setupSwagger = async (projectLocation: string, swagger: SwaggerSetup) => {
     await SetupSwagger.init(projectLocation, swagger)
+}
+
+const setupDocker = async (projectLocation: string, docker: boolean) => {
+    if (docker) {
+        return
+    }
+
+    //remove docker files
+    const dockerfileLocation = path.join(projectLocation, 'Dockerfile')
+    await fs.rm(dockerfileLocation)
+
+    const dockerComposeLocation = path.join(projectLocation, 'docker-compose.yml')
+    await fs.rm(dockerComposeLocation)
+
+    const dockerIgnoreLocation = path.join(projectLocation, '.dockerignore')
+    await fs.rm(dockerIgnoreLocation)
 }
