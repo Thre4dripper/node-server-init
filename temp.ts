@@ -8,7 +8,7 @@ import shell from 'shelljs'
     shell.exec('tsc')
     //clone template
     shell.cd('dist')
-    shell.exec('git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template template')
+    shell.exec('git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template template-typescript')
     //remove git
     shell.cd('template')
     shell.rm('-rf', '.git')

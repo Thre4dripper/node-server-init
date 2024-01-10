@@ -42,4 +42,25 @@ jobs:
         run: |
           cd dist
           git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template.git template-typescript
-          cd ..
+          cd template-typescript
+          rm -rf .git
+          rm -rf .github
+          cd ../..
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: dist
+  publish:
+    needs: prepare-template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: dist
+      - name: Publish package on NPM
+        run: echo "publishing package on NPM"

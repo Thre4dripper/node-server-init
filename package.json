@@ -1,8 +1,12 @@
 {
   "name": "node-initializer",
   "version": "1.0.0",
-  "description": "cli tool for initializing backend projects",
+  "description": "cli tool for initializing service based backend projects",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Thre4dripper/node-initializer.git"
+  },
   "scripts": {
     "build": "tsc",
     "build-local": "ts-node temp.ts",

@@ -74,7 +74,7 @@ export const installScript = async (projectConfig: ProjectConfig) => {
 }
 
 const createProjectFolder = async (projectLocation: string) => {
-    const templateLocation = path.join(__dirname, '..', '..', 'template')
+    const templateLocation = path.join(__dirname, '..', '..', 'template-typescript')
     const projectFolder = path.join(projectLocation)
     await fs.cp(templateLocation, projectFolder, { recursive: true })
 }
