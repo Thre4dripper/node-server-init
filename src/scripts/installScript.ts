@@ -1,11 +1,12 @@
 import path from 'node:path'
 import fs from 'fs/promises'
 import { note, outro, spinner } from '@clack/prompts'
-import { Apis, ProjectConfig } from '../prompts/interfaces'
+import { Apis, ProjectConfig, SwaggerSetup } from '../prompts/interfaces'
 import { Database, InstallationType } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
 import SetupSequelize from './setupSequelize'
 import SetupSocket from './setupSocket'
+import SetupSwagger from './setupSwagger'
 // {
 //     projectLocation: 'C:\\Users\\ijlal\\Desktop\\New folder\\test',
 //     projectName: 'my-project',
@@ -58,6 +59,10 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         s.start('Setting up socket')
         await setupSocket(projectConfig.projectLocation, projectConfig.socket)
         s.stop('Setup socket')
+
+        s.start('Setting up swagger')
+        await setupSwagger(projectConfig.projectLocation, projectConfig.swagger)
+        s.stop('Setup swagger')
         // endPromptSession()
     } catch (err) {
         console.log(err)
@@ -123,4 +128,8 @@ const setupApis = async (projectLocation: string, apis: Apis[]) => {
 
 const setupSocket = async (projectLocation: string, socket: boolean) => {
     await SetupSocket.init(projectLocation, socket)
+}
+
+const setupSwagger = async (projectLocation: string, swagger: SwaggerSetup) => {
+    await SetupSwagger.init(projectLocation, swagger)
 }
