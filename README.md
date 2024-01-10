@@ -43,6 +43,10 @@ If you want to use current directory as the project folder, run the following co
 npx node-server-init .
 ```
 
+## Demo
+https://github.com/Thre4dripper/node-server-init/assets/82382156/79a929f8-10c6-4b93-abda-43910de5fadb
+
+
 ## Features
 
 This npm package provides a flexible setup for Node.js server projects with the following features:
