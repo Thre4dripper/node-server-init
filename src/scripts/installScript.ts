@@ -1,37 +1,13 @@
 import path from 'node:path'
 import fs from 'fs/promises'
-import { note, outro, spinner } from '@clack/prompts'
+import { outro, spinner } from '@clack/prompts'
 import { Apis, ProjectConfig, SwaggerSetup } from '../prompts/interfaces'
 import { Database, InstallationType } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
 import SetupSequelize from './setupSequelize'
 import SetupSocket from './setupSocket'
 import SetupSwagger from './setupSwagger'
-// {
-//     projectLocation: 'C:\\Users\\ijlal\\Desktop\\New folder\\test',
-//     projectName: 'my-project',
-//     projectType: 'ts',
-//     database: 'mongo',
-//     installationType: 'all',
-//     apis: [
-//     { type: 'get', require: true },
-//     { type: 'post', require: true },
-//     { type: 'put', require: true },
-//     { type: 'delete', require: true },
-//     { type: 'patch', require: true }
-// ],
-//     socket: true,
-//     swagger: { enabled: true, path: '/api-docs' },
-//     docker: true
-// }
-const endPromptSession = () => {
-    note(
-        'This tool will now install dependencies, configure your project, and do other fancy things.',
-        'Press Ctrl+C to cancel.',
-    )
 
-    outro('Thank you for using Node Initializer')
-}
 export const installScript = async (projectConfig: ProjectConfig) => {
     try {
 
@@ -67,7 +43,8 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         s.start('Setting up docker')
         await setupDocker(projectConfig.projectLocation, projectConfig.docker)
         s.stop('Setup docker')
-        // endPromptSession()
+
+        outro('Project setup complete.')
     } catch (err) {
         console.log(err)
     }
