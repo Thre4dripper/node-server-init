@@ -30,7 +30,11 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         }
 
         s.start('Setting up api controllers')
-        await setupApis(projectConfig.projectLocation, projectConfig.apis)
+        await setupApis(
+            projectConfig.projectLocation,
+            projectConfig.apis,
+            projectConfig.projectType
+        )
         s.stop('Setup api controllers')
 
         s.start('Configuring socket')
@@ -69,8 +73,8 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
     const packageJsonLocation = path.join(projectLocation, 'package.json')
     const packageJson = await fs.readFile(packageJsonLocation, 'utf8')
     const packageJsonObj = JSON.parse(packageJson) as {
-        scripts: { [key: string]: string },
-        devDependencies: { [key: string]: string },
+        scripts: { [key: string]: string }
+        devDependencies: { [key: string]: string }
     }
 
     if (projectType === ProjectType.Typescript) {
@@ -123,8 +127,14 @@ const setupProjectDatabase = async (
     }
 }
 
-const setupApis = async (projectLocation: string, apis: Apis[]) => {
-    const masterControllerLocation = path.join(projectLocation, 'src', 'app', 'utils', 'masterController.ts')
+const setupApis = async (projectLocation: string, apis: Apis[], projectType: ProjectType) => {
+    const masterControllerLocation = path.join(
+        projectLocation,
+        'src',
+        'app',
+        'utils',
+        `masterController.${projectType}`
+    )
     const masterControllerContents = await fs.readFile(masterControllerLocation, 'utf8')
 
     const masterControllerLines = masterControllerContents.split('\n')
@@ -134,9 +144,15 @@ const setupApis = async (projectLocation: string, apis: Apis[]) => {
     //removing api controllers from master controller
     apis.forEach((api) => {
         if (!api.require) {
-            const apiDocStartLine = masterControllerLines.findIndex((line) => line.includes(`${api.type.toUpperCase()}`))
-            const apiStartLine = masterControllerLines.findIndex((line) => line.includes(`static ${api.type}(`))
-            const apiEndLine = masterControllerLines.findIndex((line, index) => line.includes('}') && index > apiStartLine)
+            const apiDocStartLine = masterControllerLines.findIndex((line) =>
+                line.includes(`${api.type.toUpperCase()}`)
+            )
+            const apiStartLine = masterControllerLines.findIndex((line) =>
+                line.includes(`static ${api.type}(`)
+            )
+            const apiEndLine = masterControllerLines.findIndex(
+                (line, index) => line.includes('}') && index > apiStartLine
+            )
 
             for (let i = apiDocStartLine - 2; i <= apiEndLine; i++) {
                 linesToBeRemoved.push(i)
@@ -144,17 +160,28 @@ const setupApis = async (projectLocation: string, apis: Apis[]) => {
         }
     })
 
-    const filteredMasterControllerLines = masterControllerLines.filter((_, index) => !linesToBeRemoved.includes(index))
+    const filteredMasterControllerLines = masterControllerLines.filter(
+        (_, index) => !linesToBeRemoved.includes(index)
+    )
 
     const masterControllerModified = filteredMasterControllerLines.join('\n')
     await fs.writeFile(masterControllerLocation, masterControllerModified)
 
     //changes in routes
-    const routesLocation = path.join(projectLocation, 'src', 'app', 'routes', 'user.router.ts')
+    const routesLocation = path.join(
+        projectLocation,
+        'src',
+        'app',
+        'routes',
+        `user.router.${projectType}`
+    )
     const routesContents = await fs.readFile(routesLocation, 'utf8')
 
     const availableMethod = apis.filter((api) => api.require).map((api) => api.type)[0]
-    const routesModified = routesContents.replace(/(get|post|put|delete|patch)\(/g, `${availableMethod}(`)
+    const routesModified = routesContents.replace(
+        /(get|post|put|delete|patch)\(/g,
+        `${availableMethod}(`
+    )
     await fs.writeFile(routesLocation, routesModified)
 }
 
