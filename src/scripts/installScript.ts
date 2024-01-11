@@ -38,7 +38,11 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         s.stop('Setup api controllers')
 
         s.start('Configuring socket')
-        await setupSocket(projectConfig.projectLocation, projectConfig.socket)
+        await setupSocket(
+            projectConfig.projectLocation,
+            projectConfig.socket,
+            projectConfig.projectType
+        )
         s.stop('Configured socket')
 
         s.start('Setting up swagger')
@@ -185,8 +189,8 @@ const setupApis = async (projectLocation: string, apis: Apis[], projectType: Pro
     await fs.writeFile(routesLocation, routesModified)
 }
 
-const setupSocket = async (projectLocation: string, socket: boolean) => {
-    await SetupSocket.init(projectLocation, socket)
+const setupSocket = async (projectLocation: string, socket: boolean, projectType: ProjectType) => {
+    await SetupSocket.init(projectLocation, socket, projectType)
 }
 
 const setupSwagger = async (projectLocation: string, swagger: SwaggerSetup) => {
