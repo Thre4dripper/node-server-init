@@ -10,7 +10,6 @@ import SetupSwagger from './setupSwagger'
 
 export const installScript = async (projectConfig: ProjectConfig) => {
     try {
-
         const s = spinner()
         s.start('Creating project folder')
         await createProjectFolder(projectConfig.projectLocation, projectConfig.projectType)
@@ -19,7 +18,11 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         s.stop('Created project folder')
 
         s.start('Integrating database')
-        await setupProjectDatabase(projectConfig.projectLocation, projectConfig.database)
+        await setupProjectDatabase(
+            projectConfig.projectLocation,
+            projectConfig.database,
+            projectConfig.projectType
+        )
         s.stop('Integrated database')
 
         if (projectConfig.installationType === InstallationType.All) {
@@ -108,11 +111,15 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
     await fs.writeFile(packageJsonLocation, JSON.stringify(packageJsonObj, null, 2))
 }
 
-const setupProjectDatabase = async (projectLocation: string, database: Database) => {
+const setupProjectDatabase = async (
+    projectLocation: string,
+    database: Database,
+    projectType: ProjectType
+) => {
     if (database === Database.Mongo) {
-        await SetupMongoose.init(projectLocation)
+        await SetupMongoose.init(projectLocation, projectType)
     } else {
-        await SetupSequelize.init(projectLocation, database)
+        await SetupSequelize.init(projectLocation, database, projectType)
     }
 }
 

@@ -1,16 +1,17 @@
 import path from 'node:path'
 import fs from 'fs/promises'
 import { getLatestVersion } from './utils'
+import { ProjectType } from '../prompts/enums'
 
 class SetupMongoose {
-    public static async init(projectLocation: string) {
+    public static async init(projectLocation: string, projectType: ProjectType) {
         await this.envSetup(projectLocation)
         await this.dependencies(projectLocation)
-        await this.changeRepository(projectLocation)
-        await this.changeService(projectLocation)
-        await this.changeModels(projectLocation)
-        await this.removeSequelizeConfig(projectLocation)
-        await this.editServer(projectLocation)
+        await this.changeRepository(projectLocation, projectType)
+        await this.changeService(projectLocation, projectType)
+        await this.changeModels(projectLocation, projectType)
+        await this.removeSequelizeConfig(projectLocation, projectType)
+        await this.editServer(projectLocation, projectType)
     }
 
     private static async envSetup(projectLocation: string) {
@@ -56,7 +57,7 @@ class SetupMongoose {
         await fs.writeFile(packageJsonLocation, JSON.stringify(packageJson, null, 2))
     }
 
-    private static async changeRepository(projectLocation: string) {
+    private static async changeRepository(projectLocation: string, projectType: ProjectType) {
         const sequelizeRepo = path.join(
             projectLocation,
             'src',
@@ -64,7 +65,7 @@ class SetupMongoose {
             'apis',
             'user',
             'repositories',
-            'sequelize.user.repository.ts'
+            `sequelize.user.repository.${projectType}`
         )
         await fs.rm(sequelizeRepo)
 
@@ -75,7 +76,7 @@ class SetupMongoose {
             'apis',
             'user',
             'repositories',
-            'mongoose.user.repository.ts'
+            `mongoose.user.repository.${projectType}`
         )
         const mongoRepoContents = await fs.readFile(mongoRepo, 'utf8')
         const mongoRepoContentsModified = mongoRepoContents.replace(
@@ -92,12 +93,12 @@ class SetupMongoose {
                 'apis',
                 'user',
                 'repositories',
-                'user.repository.ts'
+                `user.repository.${projectType}`
             )
         )
     }
 
-    private static async changeService(projectLocation: string) {
+    private static async changeService(projectLocation: string, projectType: ProjectType) {
         const service = path.join(
             projectLocation,
             'src',
@@ -105,7 +106,7 @@ class SetupMongoose {
             'apis',
             'user',
             'services',
-            'user.service.ts'
+            `user.service.${projectType}`
         )
         const serviceContents = await fs.readFile(service, 'utf8')
         const regex = /import userRepository from '..\/repositories\/.*.user.repository'/g
@@ -116,13 +117,13 @@ class SetupMongoose {
         await fs.writeFile(service, serviceContentsModified)
     }
 
-    private static async changeModels(projectLocation: string) {
+    private static async changeModels(projectLocation: string, projectType: ProjectType) {
         const sequelizeModel = path.join(
             projectLocation,
             'src',
             'app',
             'models',
-            'sequelize.user.model.ts'
+            `sequelize.user.model.${projectType}`
         )
         await fs.rm(sequelizeModel)
 
@@ -131,21 +132,26 @@ class SetupMongoose {
             'src',
             'app',
             'models',
-            'mongoose.user.model.ts'
+            `mongoose.user.model.${projectType}`
         )
         await fs.rename(
             mongoModel,
-            path.join(projectLocation, 'src', 'app', 'models', 'user.model.ts')
+            path.join(projectLocation, 'src', 'app', 'models', `user.model.${projectType}`)
         )
     }
 
-    private static async removeSequelizeConfig(projectLocation: string) {
-        const sequelizeConfig = path.join(projectLocation, 'src', 'config', 'sequelizeConfig.ts')
+    private static async removeSequelizeConfig(projectLocation: string, projectType: ProjectType) {
+        const sequelizeConfig = path.join(
+            projectLocation,
+            'src',
+            'config',
+            `sequelizeConfig.${projectType}`
+        )
         await fs.rm(sequelizeConfig)
     }
 
-    private static async editServer(projectLocation: string) {
-        const server = path.join(projectLocation, 'src', 'server.ts')
+    private static async editServer(projectLocation: string, projectType: ProjectType) {
+        const server = path.join(projectLocation, 'src', `server.${projectType}`)
         const serverContents = await fs.readFile(server, 'utf8')
 
         const serverContentLines = serverContents.split('\n')
