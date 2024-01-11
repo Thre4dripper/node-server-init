@@ -46,7 +46,11 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         s.stop('Configured socket')
 
         s.start('Setting up swagger')
-        await setupSwagger(projectConfig.projectLocation, projectConfig.swagger)
+        await setupSwagger(
+            projectConfig.projectLocation,
+            projectConfig.swagger,
+            projectConfig.projectType
+        )
         s.stop('Setup swagger')
 
         s.start('Setting up docker')
@@ -193,8 +197,12 @@ const setupSocket = async (projectLocation: string, socket: boolean, projectType
     await SetupSocket.init(projectLocation, socket, projectType)
 }
 
-const setupSwagger = async (projectLocation: string, swagger: SwaggerSetup) => {
-    await SetupSwagger.init(projectLocation, swagger)
+const setupSwagger = async (
+    projectLocation: string,
+    swagger: SwaggerSetup,
+    projectType: ProjectType
+) => {
+    await SetupSwagger.init(projectLocation, swagger, projectType)
 }
 
 const setupDocker = async (projectLocation: string, docker: boolean) => {
