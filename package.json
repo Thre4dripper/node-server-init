@@ -15,7 +15,7 @@
     "preview": "yarn build-local && npm link && node-server-init"
   },
   "bin": {
-    "node-initializer": "./dist/index.js"
+    "node-server-init": "./dist/index.js"
   },
   "keywords": [
     "cli",
