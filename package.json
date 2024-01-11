@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "build-local": "ts-node temp.ts",
+    "build-local": "ts-node buildScript.ts",
     "start": "yarn preview",
     "dev": "nodemon index.ts",
     "preview": "yarn build-local && npm link && node-server-init"

@@ -120,6 +120,6 @@
     "node_modules",
     "dist",
     "template*",
-    "temp.ts"
+    "buildScript.ts"
   ]
 }

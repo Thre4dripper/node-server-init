@@ -2,5 +2,5 @@
 /.idea
 /dist
 yarn-error.log
-temp.ts
+buildScript.ts
 /template

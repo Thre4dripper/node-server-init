@@ -3,7 +3,7 @@
 .gitignore
 .prettierrc
 .prettierignore
-temp.ts
+buildScript.ts
 index.ts
 tsconfig.json
 README.md

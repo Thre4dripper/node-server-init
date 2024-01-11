@@ -1,12 +1,8 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  release:
+    types: [created]
 
 jobs:
   build:
@@ -25,8 +21,10 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build
-          path: dist
+          name: build1
+          path: build1
+          retention-days: 1
+
   prepare-template:
     needs: build
     runs-on: ubuntu-latest
@@ -36,16 +34,27 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build
-          path: dist
+          name: build1
+          path: build1
       - name: Get Template
         run: |
-          cd dist
-          git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template.git template-typescript
-          cd template-typescript
-          rm -rf .git
-          rm -rf .github
-          cd ../..
+          cd build1
+          git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template.git template
+          cd template
+          rm -rf .git && rm -rf .github
+          cd ../
+          cp -r template template-ts && cp -r template template-js
+          cd template-ts && rm -rf src-javascript && mv src-typescript src
+          cd ../
+          cd template-js && rm -rf src-typescript && mv src-javascript src
+          cd ../
+          rm -rf template
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build2
+          path: dist2
+          retention-days: 1
   publish:
     needs: prepare-template
     runs-on: ubuntu-latest
@@ -55,8 +64,15 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build
-          path: dist
+          name: build2
+          path: dist2
+      - name: Get Release Version
+        id: get_release_version
+        run: echo ::set-output name=release_version::${GITHUB_REF#refs/tags/}
+      - name: Update Package Version
+        run: |
+          cd dist2
+          sed -i "s/\"version\": \"0.0.0\"/\"version\": \"${{ steps.get_release_version.outputs.release_version }}\"/" package.json
       - name: Publish package on NPM
         run: echo "publishing package on NPM"
       - name: List files and folders
