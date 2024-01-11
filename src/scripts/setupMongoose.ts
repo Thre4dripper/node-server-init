@@ -79,9 +79,10 @@ class SetupMongoose {
             `mongoose.user.repository.${projectType}`
         )
         const mongoRepoContents = await fs.readFile(mongoRepo, 'utf8')
+        const regex = /'..\/..\/..\/models\/.*.user.model'/g
         const mongoRepoContentsModified = mongoRepoContents.replace(
-            "import User from '../../../models/mongoose.user.model'",
-            "import User from '../../../models/user.model'"
+            regex,
+            "'../../../models/user.model'"
         )
         await fs.writeFile(mongoRepo, mongoRepoContentsModified)
         await fs.rename(
@@ -109,10 +110,10 @@ class SetupMongoose {
             `user.service.${projectType}`
         )
         const serviceContents = await fs.readFile(service, 'utf8')
-        const regex = /import userRepository from '..\/repositories\/.*.user.repository'/g
+        const regex = /'..\/repositories\/.*.user.repository'/g
         const serviceContentsModified = serviceContents.replace(
             regex,
-            "import userRepository from '../repositories/user.repository'"
+            "'../repositories/user.repository'"
         )
         await fs.writeFile(service, serviceContentsModified)
     }

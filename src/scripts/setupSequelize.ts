@@ -125,9 +125,10 @@ class SetupSequelize {
             `sequelize.user.repository.${projectType}`
         )
         const sequelizeRepoContents = await fs.readFile(sequelizeRepo, 'utf8')
+        const regex = /'..\/..\/..\/models\/.*.user.model'/g
         const sequelizeRepoContentsModified = sequelizeRepoContents.replace(
-            "import User from '../../../models/sequelize.user.model'",
-            "import User from '../../../models/user.model'"
+            regex,
+            "'../../../models/user.model'"
         )
         await fs.writeFile(sequelizeRepo, sequelizeRepoContentsModified)
         await fs.rename(
@@ -155,10 +156,10 @@ class SetupSequelize {
             `user.service.${projectType}`
         )
         const serviceContents = await fs.readFile(service, 'utf8')
-        const regex = /import userRepository from '..\/repositories\/.*.user.repository'/g
+        const regex = /'..\/repositories\/.*.user.repository'/g
         const serviceContentsModified = serviceContents.replace(
             regex,
-            "import userRepository from '../repositories/user.repository'"
+            "'../repositories/user.repository'"
         )
         await fs.writeFile(service, serviceContentsModified)
     }
