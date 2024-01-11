@@ -2,7 +2,7 @@ import path from 'node:path'
 import fs from 'fs/promises'
 import { outro, spinner } from '@clack/prompts'
 import { Apis, ProjectConfig, SwaggerSetup } from '../prompts/interfaces'
-import { Database, InstallationType } from '../prompts/enums'
+import { Database, InstallationType, ProjectType } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
 import SetupSequelize from './setupSequelize'
 import SetupSocket from './setupSocket'
@@ -13,28 +13,26 @@ export const installScript = async (projectConfig: ProjectConfig) => {
 
         const s = spinner()
         s.start('Creating project folder')
-        await createProjectFolder(projectConfig.projectLocation)
+        await createProjectFolder(projectConfig.projectLocation, projectConfig.projectType)
+        await setupProjectName(projectConfig.projectLocation, projectConfig.projectName)
+        await setupProjectType(projectConfig.projectLocation, projectConfig.projectType)
         s.stop('Created project folder')
 
-        s.start('Setting up project name')
-        await setupProjectName(projectConfig.projectLocation, projectConfig.projectName)
-        s.stop('Setup project name')
-
-        s.start('Setting up project database')
+        s.start('Integrating database')
         await setupProjectDatabase(projectConfig.projectLocation, projectConfig.database)
-        s.stop('Setup project database')
+        s.stop('Integrated database')
 
         if (projectConfig.installationType === InstallationType.All) {
             return
         }
 
-        s.start('Setting up apis')
+        s.start('Setting up api controllers')
         await setupApis(projectConfig.projectLocation, projectConfig.apis)
-        s.stop('Setup apis')
+        s.stop('Setup api controllers')
 
-        s.start('Setting up socket')
+        s.start('Configuring socket')
         await setupSocket(projectConfig.projectLocation, projectConfig.socket)
-        s.stop('Setup socket')
+        s.stop('Configured socket')
 
         s.start('Setting up swagger')
         await setupSwagger(projectConfig.projectLocation, projectConfig.swagger)
@@ -50,8 +48,8 @@ export const installScript = async (projectConfig: ProjectConfig) => {
     }
 }
 
-const createProjectFolder = async (projectLocation: string) => {
-    const templateLocation = path.join(__dirname, '..', '..', 'template-typescript')
+const createProjectFolder = async (projectLocation: string, projectType: ProjectType) => {
+    const templateLocation = path.join(__dirname, '..', '..', `template-${projectType}`)
     const projectFolder = path.join(projectLocation)
     await fs.cp(templateLocation, projectFolder, { recursive: true })
 }
@@ -61,6 +59,52 @@ const setupProjectName = async (projectLocation: string, projectName: string) =>
     const packageJson = await fs.readFile(packageJsonLocation, 'utf8')
     const packageJsonObj = JSON.parse(packageJson)
     packageJsonObj.name = projectName
+    await fs.writeFile(packageJsonLocation, JSON.stringify(packageJsonObj, null, 2))
+}
+
+const setupProjectType = async (projectLocation: string, projectType: ProjectType) => {
+    const packageJsonLocation = path.join(projectLocation, 'package.json')
+    const packageJson = await fs.readFile(packageJsonLocation, 'utf8')
+    const packageJsonObj = JSON.parse(packageJson) as {
+        scripts: { [key: string]: string },
+        devDependencies: { [key: string]: string },
+    }
+
+    if (projectType === ProjectType.Typescript) {
+        packageJsonObj.scripts.start = packageJsonObj.scripts['start-ts'].replace('-typescript', '')
+        packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-ts'].replace('-typescript', '')
+        packageJsonObj.scripts.build = packageJsonObj.scripts.build.replace('-typescript', '')
+        packageJsonObj.scripts.preview = packageJsonObj.scripts.preview.replace('-typescript', '')
+
+        delete packageJsonObj.scripts['start-ts']
+        delete packageJsonObj.scripts['dev-ts']
+        delete packageJsonObj.scripts['start-js']
+        delete packageJsonObj.scripts['dev-js']
+    } else {
+        packageJsonObj.scripts.start = packageJsonObj.scripts['start-js'].replace('-javascript', '')
+        packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-js'].replace('-javascript', '')
+
+        delete packageJsonObj.scripts['start-ts']
+        delete packageJsonObj.scripts['dev-ts']
+        delete packageJsonObj.scripts['start-js']
+        delete packageJsonObj.scripts['dev-js']
+        delete packageJsonObj.scripts.preview
+        delete packageJsonObj.scripts.build
+
+        // remove typescript dependencies
+        delete packageJsonObj.devDependencies['@types/bcrypt']
+        delete packageJsonObj.devDependencies['@types/cors']
+        delete packageJsonObj.devDependencies['@types/express']
+        delete packageJsonObj.devDependencies['@types/jsonwebtoken']
+        delete packageJsonObj.devDependencies['@types/morgan']
+        delete packageJsonObj.devDependencies['@types/node']
+        delete packageJsonObj.devDependencies['@types/swagger-ui-express']
+        delete packageJsonObj.devDependencies['copyfiles']
+        delete packageJsonObj.devDependencies['sequelize-typescript']
+        delete packageJsonObj.devDependencies['ts-node']
+        delete packageJsonObj.devDependencies['typescript']
+    }
+
     await fs.writeFile(packageJsonLocation, JSON.stringify(packageJsonObj, null, 2))
 }
 
