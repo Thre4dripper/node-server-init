@@ -44,8 +44,7 @@ npx node-server-init .
 ```
 
 ## Demo
-https://github.com/Thre4dripper/node-server-init/assets/82382156/79a929f8-10c6-4b93-abda-43910de5fadb
-
+https://github.com/Thre4dripper/node-server-init/assets/82382156/3eda5aac-ee8f-4ea3-82a1-176f00ee64db
 
 ## Features
 
