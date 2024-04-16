@@ -8,7 +8,9 @@ import shell from 'shelljs'
     shell.exec('tsc')
     //clone template
     shell.cd('dist')
-    shell.exec('git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template template')
+    shell.exec(
+        'git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template template'
+    )
     //remove git
     shell.cd('template')
     shell.rm('-rf', '.git')
@@ -23,9 +25,16 @@ import shell from 'shelljs'
     shell.rm('-rf', 'src-javascript')
     shell.mv('src-typescript', 'src')
 
+    // fix rootDir in tsconfig
+    shell.sed('-i', '"rootDir": "./src-typescript"', '"rootDir": "./src"', 'tsconfig.json')
+
+    //remove alternate src folder
     shell.cd('../template-js')
     shell.rm('-rf', 'src-typescript')
     shell.mv('src-javascript', 'src')
+
+    //remove tsconfig from js
+    shell.rm('tsconfig.json')
 
     //remove template folder from dist
     shell.cd('../')
