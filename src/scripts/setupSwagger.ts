@@ -123,7 +123,7 @@ class SetupSwagger {
             'src',
             'app',
             'utils',
-            `masterController.${projectType}`
+            `MasterController.${projectType}`
         )
         const masterControllerContents = await fs.readFile(masterControllerLocation, 'utf8')
 
