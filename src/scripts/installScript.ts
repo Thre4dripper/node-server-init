@@ -85,19 +85,41 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         devDependencies: { [key: string]: string }
     }
 
+    const nodemonConfigLocation = path.join(projectLocation, 'nodemon.json')
+    const nodemonConfig = await fs.readFile(nodemonConfigLocation, 'utf8')
+    const nodemonConfigObj = JSON.parse(nodemonConfig)
+
     if (projectType === ProjectType.Typescript) {
         packageJsonObj.scripts.start = packageJsonObj.scripts['start-ts'].replace('-typescript', '')
         packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-ts'].replace('-typescript', '')
         packageJsonObj.scripts.build = packageJsonObj.scripts.build.replace('-typescript', '')
         packageJsonObj.scripts.preview = packageJsonObj.scripts.preview.replace('-typescript', '')
+        packageJsonObj.scripts.prettier = packageJsonObj.scripts['prettier-ts'].replace(
+            '-typescript',
+            ''
+        )
 
         delete packageJsonObj.scripts['start-ts']
         delete packageJsonObj.scripts['dev-ts']
         delete packageJsonObj.scripts['start-js']
         delete packageJsonObj.scripts['dev-js']
+        delete packageJsonObj.scripts['prettier-ts']
+        delete packageJsonObj.devDependencies['prettier-js']
+
+        //nodemon-ts.json file
+        const nodemonTsConfig = path.join(projectLocation, 'nodemon-ts.json')
+        const nodemonTsConfigContents = await fs.readFile(nodemonTsConfig, 'utf8')
+        const nodemonTsConfigObj = JSON.parse(nodemonTsConfigContents)
+
+        nodemonConfigObj.exec = nodemonTsConfigObj.exec
+
     } else {
         packageJsonObj.scripts.start = packageJsonObj.scripts['start-js'].replace('-javascript', '')
         packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-js'].replace('-javascript', '')
+        packageJsonObj.scripts.prettier = packageJsonObj.scripts['prettier-js'].replace(
+            '-javascript',
+            ''
+        )
 
         delete packageJsonObj.scripts['start-ts']
         delete packageJsonObj.scripts['dev-ts']
@@ -105,6 +127,8 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         delete packageJsonObj.scripts['dev-js']
         delete packageJsonObj.scripts.preview
         delete packageJsonObj.scripts.build
+        delete packageJsonObj.scripts['prettier-ts']
+        delete packageJsonObj.scripts['prettier-js']
 
         // remove typescript dependencies
         delete packageJsonObj.devDependencies['@types/bcrypt']
@@ -118,9 +142,23 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         delete packageJsonObj.devDependencies['sequelize-typescript']
         delete packageJsonObj.devDependencies['ts-node']
         delete packageJsonObj.devDependencies['typescript']
+
+        // nodemon-js.json file
+        const nodemonJsConfig = path.join(projectLocation, 'nodemon-js.json')
+        const nodemonJsConfigContents = await fs.readFile(nodemonJsConfig, 'utf8')
+        const nodemonJsConfigObj = JSON.parse(nodemonJsConfigContents)
+
+        nodemonConfigObj.exec = nodemonJsConfigObj.exec.replace('-javascript', '')
+
     }
 
-    await fs.writeFile(packageJsonLocation, JSON.stringify(packageJsonObj, null, 2))
+    //save changes and delete nodemon-ts.json and nodemon-js.json
+    await Promise.all([
+        fs.writeFile(packageJsonLocation, JSON.stringify(packageJsonObj, null, 2)),
+        fs.writeFile(nodemonConfigLocation, JSON.stringify(nodemonConfigObj, null, 2)),
+        fs.rm(path.join(projectLocation, 'nodemon-ts.json')),
+        fs.rm(path.join(projectLocation, 'nodemon-js.json'))
+    ])
 }
 
 const setupProjectDatabase = async (

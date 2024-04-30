@@ -3,6 +3,8 @@
 .gitignore
 .prettierrc
 .prettierignore
+.github/
+template/
 buildScript.ts
 index.ts
 tsconfig.json
