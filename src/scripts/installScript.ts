@@ -91,7 +91,9 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
 
     if (projectType === ProjectType.Typescript) {
         packageJsonObj.scripts.start = packageJsonObj.scripts['start-ts'].replace('-typescript', '')
-        packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-ts'].replace('-typescript', '')
+        packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-ts']
+            .replace('-typescript', '')
+            .replace('-ts', '')
         packageJsonObj.scripts.build = packageJsonObj.scripts.build.replace('-typescript', '')
         packageJsonObj.scripts.preview = packageJsonObj.scripts.preview.replace('-typescript', '')
         packageJsonObj.scripts.prettier = packageJsonObj.scripts['prettier-ts'].replace(
@@ -112,10 +114,11 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         const nodemonTsConfigObj = JSON.parse(nodemonTsConfigContents)
 
         nodemonConfigObj.exec = nodemonTsConfigObj.exec
-
     } else {
         packageJsonObj.scripts.start = packageJsonObj.scripts['start-js'].replace('-javascript', '')
-        packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-js'].replace('-javascript', '')
+        packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-js']
+            .replace('-javascript', '')
+            .replace('-js', '')
         packageJsonObj.scripts.prettier = packageJsonObj.scripts['prettier-js'].replace(
             '-javascript',
             ''
@@ -149,7 +152,6 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         const nodemonJsConfigObj = JSON.parse(nodemonJsConfigContents)
 
         nodemonConfigObj.exec = nodemonJsConfigObj.exec.replace('-javascript', '')
-
     }
 
     //save changes and delete nodemon-ts.json and nodemon-js.json
@@ -157,7 +159,7 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         fs.writeFile(packageJsonLocation, JSON.stringify(packageJsonObj, null, 2)),
         fs.writeFile(nodemonConfigLocation, JSON.stringify(nodemonConfigObj, null, 2)),
         fs.rm(path.join(projectLocation, 'nodemon-ts.json')),
-        fs.rm(path.join(projectLocation, 'nodemon-js.json'))
+        fs.rm(path.join(projectLocation, 'nodemon-js.json')),
     ])
 }
 
