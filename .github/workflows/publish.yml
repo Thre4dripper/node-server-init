@@ -1,0 +1,197 @@
+name: Version Check and Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-version:
+    name: Check version
+    runs-on: ubuntu-latest
+    outputs:
+      should_update: ${{ steps.compare_versions.outputs.should_update }}
+      should_publish: ${{ steps.compare_versions.outputs.should_publish }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Compare versions and set output
+        id: compare_versions
+        run: |
+          REPO=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view $REPO version)
+          
+          HIGHEST_VERSION=$(echo -e "$CURRENT_VERSION\n$NPM_VERSION" | sort -V | tail -n 1)
+          
+          if [ "$HIGHEST_VERSION" = "$NPM_VERSION" ]; then
+            echo "should_update=true" >> $GITHUB_OUTPUT
+          elif [ "$HIGHEST_VERSION" = "$CURRENT_VERSION" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+
+
+  build:
+    name: Build
+    needs: check-version
+    if: needs.check-version.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: rm -rf dist && yarn build
+
+      - name: Prepare Template
+        run: |
+          cd dist
+          git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template.git template
+          cd template
+          rm -rf .git && rm -rf .github
+          cd ../
+          cp -r template template-ts && cp -r template template-js
+          cd template-ts && rm -rf src-javascript && mv src-typescript src
+          sed -i 's|"rootDir": "./src-typescript"|"rootDir": "./src"|g' tsconfig.json
+          cd ../
+          cd template-js && rm -rf src-typescript && mv src-javascript src
+          rm tsconfig.json
+          cd ../
+          rm -rf template
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            ./**
+            !node_modules/**
+
+  publish:
+    name: Publish to NPM
+    needs: build
+    if: needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Publish package on NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release:
+    name: Create Release
+    needs: publish
+    if: needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
+    steps:
+      - name: Get build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Get Version
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          release_name: Release v${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Create Release Notes
+        run: |
+          echo "Release v${{ steps.get_version.outputs.VERSION }}" > release-notes.md
+          echo "" >> release-notes.md
+          echo "## Changes" >> release-notes.md
+          echo "" >> release-notes.md
+          git log $(git describe --tags --abbrev=0)..HEAD --oneline --no-decorate --no-merges >> release-notes.md
+        shell: bash
+
+      - name: Upload Release Notes
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release-notes.md
+          asset_name: release-notes.md
+          asset_content_type: text/markdown
+
+      - name: Create Release Asset
+        run: |
+          tar -czf express-master-controller-v${{ steps.get_version.outputs.VERSION }}.tgz dist
+        shell: bash
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./express-master-controller-v${{ steps.get_version.outputs.VERSION }}.tgz
+          asset_name: express-master-controller-v${{ steps.get_version.outputs.VERSION }}.tgz
+          asset_content_type: application/gzip
+
+  update-version:
+    name: Update version
+    needs: check-version
+    if: needs.check-version.outputs.should_update == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+
+      - name: Update version to next patch
+        run: |
+          git config --global user.name 'Version Bot'
+          git config --global user.email 'versionbot@gmail.com'
+          npm version patch -m "Update version to %s"
+          git push
