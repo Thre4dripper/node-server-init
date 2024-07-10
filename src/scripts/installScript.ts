@@ -106,7 +106,7 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         delete packageJsonObj.scripts['start-js']
         delete packageJsonObj.scripts['dev-js']
         delete packageJsonObj.scripts['prettier-ts']
-        delete packageJsonObj.devDependencies['prettier-js']
+        delete packageJsonObj.scripts['prettier-js']
 
         //nodemon-ts.json file
         const nodemonTsConfig = path.join(projectLocation, 'nodemon-ts.json')
@@ -142,7 +142,6 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         delete packageJsonObj.devDependencies['@types/node']
         delete packageJsonObj.devDependencies['@types/swagger-ui-express']
         delete packageJsonObj.devDependencies['copyfiles']
-        delete packageJsonObj.devDependencies['sequelize-typescript']
         delete packageJsonObj.devDependencies['ts-node']
         delete packageJsonObj.devDependencies['typescript']
 
