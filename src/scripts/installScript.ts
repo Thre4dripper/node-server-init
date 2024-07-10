@@ -220,7 +220,7 @@ const setupApis = async (projectLocation: string, apis: Apis[], projectType: Pro
         'src',
         'app',
         'routes',
-        `user.router.${projectType}`
+        `user.routes.${projectType}`
     )
     const routesContents = await fs.readFile(routesLocation, 'utf8')
 

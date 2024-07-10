@@ -142,7 +142,7 @@ class SetupSocket {
     }
 
     private static async removeFromRouter(projectLocation: string, projectType: ProjectType) {
-        const routerLocation = path.join(projectLocation, 'src', 'app', 'routes', `user.router.${projectType}`)
+        const routerLocation = path.join(projectLocation, 'src', 'app', 'routes', `user.routes.${projectType}`)
         const routerContents = await fs.readFile(routerLocation, 'utf8')
 
         const routerLines = routerContents.split('\n')
