@@ -1,13 +1,4 @@
-import {
-    confirm,
-    intro,
-    isCancel,
-    log,
-    multiselect,
-    note,
-    select,
-    text,
-} from '@clack/prompts'
+import { confirm, intro, isCancel, log, multiselect, note, select, text } from '@clack/prompts'
 import { ApiType, Database, InstallationType, ProjectType } from './enums'
 import { ProjectConfig } from './interfaces'
 import path from 'node:path'
@@ -17,7 +8,7 @@ const startPromptSession = () => {
 
     note(
         'This tool will help you to setup backend project with express, mongoose, socket.io, swagger, docker and more.',
-        'Press Ctrl+C to cancel.',
+        'Press Ctrl+C to cancel.'
     )
 }
 
@@ -133,10 +124,11 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     }
 
     log.info(
-        'Multiple options can be selected by pressing <space>. Press <a> to toggle all options.',
+        'Multiple options can be selected by pressing <space>. Press <a> to toggle all options.'
     )
     const apiTypes = await multiselect({
-        message: 'Select API types. (At least one is required)',
+        message:
+            'Select API types. (At least one is required) [POST is required for initial template to run]',
         options: [
             { value: ApiType.GET, label: 'GET', hint: 'Get data from server' },
             { value: ApiType.POST, label: 'POST', hint: 'Create data on server' },
@@ -144,6 +136,8 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             { value: ApiType.DELETE, label: 'DELETE', hint: 'Remove data from server' },
             { value: ApiType.PATCH, label: 'PATCH', hint: 'Update data on server' },
         ],
+        initialValues: [ApiType.POST],
+        cursorAt: ApiType.POST,
         required: true,
     })
 
@@ -172,19 +166,19 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
 
     const swaggerPath = swagger
         ? await text({
-            message: 'What is your swagger path?',
-            placeholder: '/swagger',
-            initialValue: '/swagger',
-            validate: (value) => {
-                if (value[0] !== '/') {
-                    return 'Path must start with /'
-                }
-                const regex = /^\/[a-zA-Z0-9-_]+$/
-                if (!regex.test(value)) {
-                    return 'Invalid path'
-                }
-            },
-        })
+              message: 'What is your swagger path?',
+              placeholder: '/swagger',
+              initialValue: '/swagger',
+              validate: (value) => {
+                  if (value[0] !== '/') {
+                      return 'Path must start with /'
+                  }
+                  const regex = /^\/[a-zA-Z0-9-_]+$/
+                  if (!regex.test(value)) {
+                      return 'Invalid path'
+                  }
+              },
+          })
         : undefined
 
     if (isCancel(swaggerPath)) {

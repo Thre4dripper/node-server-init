@@ -2,7 +2,7 @@ import path from 'node:path'
 import fs from 'fs/promises'
 import { outro, spinner } from '@clack/prompts'
 import { Apis, ProjectConfig, SwaggerSetup } from '../prompts/interfaces'
-import { Database, InstallationType, ProjectType } from '../prompts/enums'
+import { ApiType, Database, InstallationType, ProjectType } from '../prompts/enums'
 import SetupMongoose from './setupMongoose'
 import SetupSequelize from './setupSequelize'
 import SetupSocket from './setupSocket'
@@ -224,7 +224,13 @@ const setupApis = async (projectLocation: string, apis: Apis[], projectType: Pro
     )
     const routesContents = await fs.readFile(routesLocation, 'utf8')
 
-    const availableMethod = apis.filter((api) => api.require).map((api) => api.type)[0]
+    const availableMethods = apis.filter((api) => api.require).map((api) => api.type)
+
+    // prefer POST method if available
+    const availableMethod = availableMethods.includes(ApiType.POST)
+        ? ApiType.POST
+        : availableMethods[0]
+
     const routesModified = routesContents.replace(
         /(get|post|put|delete|patch)\(/g,
         `${availableMethod}(`
