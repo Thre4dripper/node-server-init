@@ -16,6 +16,7 @@ class SetupSwagger {
             await this.deleteSwaggerConfig(projectLocation, projectType)
             await this.removeFromExpressConfig(projectLocation, projectType)
             await this.removeFromMasterController(projectLocation, projectType)
+            await this.removeFromControllers(projectLocation, projectType)
         }
     }
 
@@ -137,6 +138,20 @@ class SetupSwagger {
         )
         linesToBeRemoved.push(swaggerImportLineIndex)
 
+        //remove swagger doc method
+        const swaggerDocMethodStartIndex = masterControllerLines.findIndex(
+            (line) => line.includes('@method MasterController.doc') // this will be the second line of the swagger doc method
+        )
+        const swaggerDocMethodEndIndex = masterControllerLines.findIndex(
+            (line) => line.includes('};'), // this will be the last second line of the swagger doc method
+            swaggerDocMethodStartIndex
+        )
+
+        //include the lines above and below the swagger doc method to be removed completely
+        for (let i = swaggerDocMethodStartIndex - 1; i <= swaggerDocMethodEndIndex + 1; i++) {
+            linesToBeRemoved.push(i)
+        }
+
         // remove swagger usage
         masterControllerLines.forEach((line, index) => {
             if (line.includes('recordApi')) {
@@ -149,6 +164,86 @@ class SetupSwagger {
         )
         const masterControllerModified = filteredMasterControllerLines.join('\n')
         await fs.writeFile(masterControllerLocation, masterControllerModified)
+    }
+
+    private static async removeFromControllers(projectLocation: string, projectType: ProjectType) {
+        // remove from login controller
+        const loginControllerLocation = path.join(
+            projectLocation,
+            'src',
+            'app',
+            'apis',
+            'user',
+            'controllers',
+            `login.user.controller.${projectType}`
+        )
+
+        const loginControllerContents = await fs.readFile(loginControllerLocation, 'utf8')
+
+        const loginControllerLines = loginControllerContents.split('\n')
+
+        const linesToBeRemoved: number[] = []
+
+        //remove swagger lines
+        const swaggerMethodStartIndex = loginControllerLines.findIndex(
+            (line) => line.includes('doc()') // this will be the first line of the swagger doc method
+        )
+
+        const swaggerMethodEndIndex = loginControllerLines.findIndex(
+            (line) => line.includes('};'), // this will be the last second line of the swagger doc method
+            swaggerMethodStartIndex
+        )
+
+        //include the lines below the swagger doc method to be removed completely
+        for (let i = swaggerMethodStartIndex; i <= swaggerMethodEndIndex + 1; i++) {
+            linesToBeRemoved.push(i)
+        }
+
+        const filteredLoginControllerLines = loginControllerLines.filter(
+            (_, index) => !linesToBeRemoved.includes(index)
+        )
+
+        const loginControllerModified = filteredLoginControllerLines.join('\n')
+        await fs.writeFile(loginControllerLocation, loginControllerModified)
+
+        // remove from register controller
+        const registerControllerLocation = path.join(
+            projectLocation,
+            'src',
+            'app',
+            'apis',
+            'user',
+            'controllers',
+            `register.user.controller.${projectType}`
+        )
+
+        const registerControllerContents = await fs.readFile(registerControllerLocation, 'utf8')
+
+        const registerControllerLines = registerControllerContents.split('\n')
+
+        const linesToBeRemovedRegister: number[] = []
+
+        //remove swagger lines
+        const swaggerMethodStartIndexRegister = registerControllerLines.findIndex(
+            (line) => line.includes('doc()') // this will be the first line of the swagger doc method
+        )
+
+        const swaggerMethodEndIndexRegister = registerControllerLines.findIndex(
+            (line) => line.includes('};'), // this will be the last second line of the swagger doc method
+            swaggerMethodStartIndexRegister
+        )
+
+        //include the lines below the swagger doc method to be removed completely
+        for (let i = swaggerMethodStartIndexRegister; i <= swaggerMethodEndIndexRegister + 1; i++) {
+            linesToBeRemovedRegister.push(i)
+        }
+
+        const filteredRegisterControllerLines = registerControllerLines.filter(
+            (_, index) => !linesToBeRemovedRegister.includes(index)
+        )
+
+        const registerControllerModified = filteredRegisterControllerLines.join('\n')
+        await fs.writeFile(registerControllerLocation, registerControllerModified)
     }
 }
 
