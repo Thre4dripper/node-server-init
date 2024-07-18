@@ -256,8 +256,11 @@ const setupDocker = async (projectLocation: string, docker: boolean) => {
     }
 
     //remove docker files
-    const dockerfileLocation = path.join(projectLocation, 'Dockerfile')
-    await fs.rm(dockerfileLocation)
+    const dockerfileDevLocation = path.join(projectLocation, 'Dockerfile-dev')
+    const dockerfileProdLocation = path.join(projectLocation, 'Dockerfile-prod')
+
+    await fs.rm(dockerfileDevLocation)
+    await fs.rm(dockerfileProdLocation)
 
     const dockerComposeLocation = path.join(projectLocation, 'docker-compose.yml')
     await fs.rm(dockerComposeLocation)
