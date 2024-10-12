@@ -6,6 +6,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  packages: write
+  issues: write
+
 env:
   REPO_NAME: ${GITHUB_REPOSITORY#*/}
 
@@ -123,6 +128,9 @@ jobs:
           name: build
           path: .
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -137,49 +145,24 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-        with:
-          tag_name: v${{ steps.get_version.outputs.VERSION }}
-          release_name: Release v${{ steps.get_version.outputs.VERSION }}
-          draft: false
-          prerelease: false
-
-      - name: Create Release Notes
+          tag: v${{ steps.get_version.outputs.VERSION }}
         run: |
-          echo "Release v${{ steps.get_version.outputs.VERSION }}" > release-notes.md
-          echo "" >> release-notes.md
-          echo "## Changes" >> release-notes.md
-          echo "" >> release-notes.md
-          git log $(git describe --tags --abbrev=0)..HEAD --oneline --no-decorate --no-merges >> release-notes.md
-        shell: bash
-
-      - name: Upload Release Notes
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-notes.md
-          asset_name: release-notes.md
-          asset_content_type: text/markdown
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="Release $tag" \
+              --generate-notes
 
       - name: Create Release Asset
         run: |
-          tar -czf release-v${{ steps.get_version.outputs.VERSION }}.tgz dist
+          tar -czf release-v${{ steps.get_version.outputs.VERSION }}.tar.gz dist
         shell: bash
 
       - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-v${{ steps.get_version.outputs.VERSION }}.tgz
-          asset_name: release-v${{ steps.get_version.outputs.VERSION }}.tgz
-          asset_content_type: application/gzip
+        run: |
+          gh release upload "$tag" release-v${{ steps.get_version.outputs.VERSION }}.tar.gz --clobber
+        shell: bash
 
   update-version:
     name: Update version
