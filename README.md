@@ -44,6 +44,7 @@ npx node-server-init .
 ```
 
 ## Demo
+
 https://github.com/Thre4dripper/node-server-init/assets/82382156/3eda5aac-ee8f-4ea3-82a1-176f00ee64db
 
 ## Features
@@ -81,3 +82,12 @@ my-server
     │   └───utils
     └───config
 ```
+
+## Implementation
+
+Curious about the magic behind this package? 🌟
+Wondering where all those files come from? 🧐
+
+The secret sauce is the [NodeTs-Express-Service-Based-Template](https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template)!
+
+> P. S. I made that too! 😄
