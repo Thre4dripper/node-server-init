@@ -7,6 +7,7 @@ import SetupMongoose from './setupMongoose'
 import SetupSequelize from './setupSequelize'
 import SetupSocket from './setupSocket'
 import SetupSwagger from './setupSwagger'
+import SetupCron from './setupCron'
 
 export const installScript = async (projectConfig: ProjectConfig) => {
     try {
@@ -25,6 +26,7 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         )
         s.stop('Integrated database')
 
+        // TODO fix these messages
         if (projectConfig.installationType === InstallationType.All) {
             return
         }
@@ -44,6 +46,14 @@ export const installScript = async (projectConfig: ProjectConfig) => {
             projectConfig.projectType
         )
         s.stop('Configured socket')
+
+        s.start('Configuring cron')
+        await setupCron(
+            projectConfig.projectLocation,
+            projectConfig.cron,
+            projectConfig.projectType
+        )
+        s.stop('Configured cron')
 
         s.start('Setting up swagger')
         await setupSwagger(
@@ -242,6 +252,10 @@ const setupSocket = async (projectLocation: string, socket: boolean, projectType
     await SetupSocket.init(projectLocation, socket, projectType)
 }
 
+const setupCron = async (projectLocation: string, cron: boolean, projectType: ProjectType) => {
+    await SetupCron.init(projectLocation, cron, projectType)
+}
+
 const setupSwagger = async (
     projectLocation: string,
     swagger: SwaggerSetup,
@@ -254,6 +268,8 @@ const setupDocker = async (projectLocation: string, docker: boolean) => {
     if (docker) {
         return
     }
+
+    //TODO make a setup docker class with handler as folders
 
     //remove docker files
     const dockerfileDevLocation = path.join(projectLocation, 'Dockerfile-dev')

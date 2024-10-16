@@ -4,6 +4,7 @@ import { ProjectType } from '../prompts/enums'
 
 class SetupSocket {
     public static async init(projectLocation: string, socket: boolean, projectType: ProjectType) {
+        //TODO fix this return step, move it to the function calling place
         if (socket) return
         await this.dependencies(projectLocation)
         await this.deleteSocketConfig(projectLocation, projectType)
@@ -20,7 +21,12 @@ class SetupSocket {
     }
 
     private static async deleteSocketConfig(projectLocation: string, projectType: ProjectType) {
-        const socketConfig = path.join(projectLocation, 'src', 'config', `socketConfig.${projectType}`)
+        const socketConfig = path.join(
+            projectLocation,
+            'src',
+            'config',
+            `socketConfig.${projectType}`
+        )
         await fs.rm(socketConfig)
     }
 
@@ -142,7 +148,13 @@ class SetupSocket {
     }
 
     private static async removeFromRouter(projectLocation: string, projectType: ProjectType) {
-        const routerLocation = path.join(projectLocation, 'src', 'app', 'routes', `user.routes.${projectType}`)
+        const routerLocation = path.join(
+            projectLocation,
+            'src',
+            'app',
+            'routes',
+            `user.routes.${projectType}`
+        )
         const routerContents = await fs.readFile(routerLocation, 'utf8')
 
         const routerLines = routerContents.split('\n')

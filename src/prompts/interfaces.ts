@@ -18,6 +18,7 @@ export interface ProjectConfig {
     installationType: InstallationType
     apis: Apis[]
     socket: boolean
+    cron: boolean
     swagger: SwaggerSetup,
     docker: boolean
 }

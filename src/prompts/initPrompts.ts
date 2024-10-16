@@ -115,6 +115,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
                 { type: ApiType.PATCH, require: true },
             ],
             socket: true,
+            cron: true,
             swagger: {
                 enabled: true,
                 path: '/api-docs',
@@ -151,6 +152,15 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     })
 
     if (isCancel(socket)) {
+        log.warning('Cancelled by user')
+        return await startOver()
+    }
+
+    const cron = await confirm({
+        message: 'Do you want to use cron?',
+    })
+
+    if (isCancel(cron)) {
         log.warning('Cancelled by user')
         return await startOver()
     }
@@ -208,6 +218,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             }
         }),
         socket: socket as boolean,
+        cron: cron as boolean,
         swagger: {
             enabled: swagger as boolean,
             path: swagger ? (swaggerPath as string) : undefined,
