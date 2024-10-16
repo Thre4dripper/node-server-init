@@ -103,7 +103,7 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         packageJsonObj.scripts.start = packageJsonObj.scripts['start-ts'].replace('-typescript', '')
         packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-ts']
             .replace('-typescript', '')
-            .replace('-ts', '')
+            .replace(/-ts/g, '')
         packageJsonObj.scripts.build = packageJsonObj.scripts.build.replace('-typescript', '')
         packageJsonObj.scripts.preview = packageJsonObj.scripts.preview.replace('-typescript', '')
         packageJsonObj.scripts.prettier = packageJsonObj.scripts['prettier-ts'].replace(
@@ -128,7 +128,7 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         packageJsonObj.scripts.start = packageJsonObj.scripts['start-js'].replace('-javascript', '')
         packageJsonObj.scripts.dev = packageJsonObj.scripts['dev-js']
             .replace('-javascript', '')
-            .replace('-js', '')
+            .replace(/-js/g, '')
         packageJsonObj.scripts.prettier = packageJsonObj.scripts['prettier-js'].replace(
             '-javascript',
             ''
@@ -144,6 +144,7 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         delete packageJsonObj.scripts['prettier-js']
 
         // remove typescript dependencies
+        // Todo remove typescript eslint dependencies also
         delete packageJsonObj.devDependencies['@types/bcrypt']
         delete packageJsonObj.devDependencies['@types/cors']
         delete packageJsonObj.devDependencies['@types/express']

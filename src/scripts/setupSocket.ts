@@ -46,8 +46,8 @@ class SetupSocket {
         const socketConfigStartIndex = serverContentLines.findIndex((line) =>
             line.includes('Initialize Socket.IO')
         )
-        const socketConfigEndIndex = serverContentLines.findIndex((line) =>
-            line.includes('End Initialize')
+        const socketConfigEndIndex = serverContentLines.findIndex(
+            (line, index) => line.includes('End Initialize') && index > socketConfigStartIndex
         )
 
         for (let i = socketConfigStartIndex; i <= socketConfigEndIndex; i++) {
