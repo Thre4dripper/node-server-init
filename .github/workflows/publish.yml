@@ -15,8 +15,35 @@ env:
   REPO_NAME: ${GITHUB_REPOSITORY#*/}
 
 jobs:
+  check-build:
+    name: Check Build
+    runs-on: ubuntu-latest
+    outputs:
+      should_continue: ${{ steps.check_build.outputs.should_continue }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        id: check_build
+        run: |
+          rm -rf dist
+          yarn build || echo "should_continue=false" >> $GITHUB_OUTPUT
+          echo "should_continue=true" >> $GITHUB_OUTPUT
+
   check-version:
     name: Check version
+    needs: check-build
+    if: needs.check-build.outputs.should_continue == 'true'
     runs-on: ubuntu-latest
     outputs:
       should_update: ${{ steps.compare_versions.outputs.should_update }}
