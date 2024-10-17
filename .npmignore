@@ -1,13 +1,11 @@
-/src
-/.idea
+src
+.idea
 .gitignore
 .prettierrc
 .prettierignore
-.github/
-template/
+.github
+template
 buildScript.ts
 index.ts
 tsconfig.json
-README.md
-LICENSE
 yarn.lock
