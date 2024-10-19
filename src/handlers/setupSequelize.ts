@@ -1,7 +1,7 @@
 import { Database, ProjectType } from '../prompts/enums'
 import path from 'node:path'
 import fs from 'fs/promises'
-import { getLatestVersion } from './utils'
+import { getLatestVersion } from '../scripts/utils'
 
 class SetupSequelize {
     public static async init(

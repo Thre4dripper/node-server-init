@@ -1,4 +1,3 @@
-//TODO remove this file in production
 import shell from 'shelljs'
 
 (async () => {

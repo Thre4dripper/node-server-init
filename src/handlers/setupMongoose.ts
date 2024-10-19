@@ -1,6 +1,6 @@
 import path from 'node:path'
 import fs from 'fs/promises'
-import { getLatestVersion } from './utils'
+import { getLatestVersion } from '../scripts/utils'
 import { ProjectType } from '../prompts/enums'
 
 class SetupMongoose {

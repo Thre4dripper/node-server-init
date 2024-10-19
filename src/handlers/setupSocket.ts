@@ -4,8 +4,9 @@ import { ProjectType } from '../prompts/enums'
 
 class SetupSocket {
     public static async init(projectLocation: string, socket: boolean, projectType: ProjectType) {
-        //TODO fix this return step, move it to the function calling place
+        // if socket is required then no need to delete socket files
         if (socket) return
+
         await this.dependencies(projectLocation)
         await this.deleteSocketConfig(projectLocation, projectType)
         await this.removeFromServer(projectLocation, projectType)

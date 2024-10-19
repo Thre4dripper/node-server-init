@@ -2,12 +2,13 @@ import path from 'node:path'
 import fs from 'fs/promises'
 import { outro, spinner } from '@clack/prompts'
 import { Apis, ProjectConfig, SwaggerSetup } from '../prompts/interfaces'
-import { ApiType, Database, InstallationType, ProjectType } from '../prompts/enums'
-import SetupMongoose from './setupMongoose'
-import SetupSequelize from './setupSequelize'
-import SetupSocket from './setupSocket'
-import SetupSwagger from './setupSwagger'
-import SetupCron from './setupCron'
+import { ApiType, Database, ProjectType } from '../prompts/enums'
+import SetupMongoose from '../handlers/setupMongoose'
+import SetupSequelize from '../handlers/setupSequelize'
+import SetupSocket from '../handlers/setupSocket'
+import SetupSwagger from '../handlers/setupSwagger'
+import SetupCron from '../handlers/setupCron'
+import SetupDocker from '../handlers/setupDocker'
 
 export const installScript = async (projectConfig: ProjectConfig) => {
     try {
@@ -26,46 +27,49 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         )
         s.stop('Integrated database')
 
-        // TODO fix these messages
-        if (projectConfig.installationType === InstallationType.All) {
-            return
-        }
-
         s.start('Setting up api controllers')
         await setupApis(
             projectConfig.projectLocation,
             projectConfig.apis,
             projectConfig.projectType
         )
-        s.stop('Setup api controllers')
+        s.stop('Api controllers setup complete')
 
-        s.start('Configuring socket')
-        await setupSocket(
-            projectConfig.projectLocation,
-            projectConfig.socket,
-            projectConfig.projectType
-        )
-        s.stop('Configured socket')
+        if (projectConfig.socket) {
+            s.start('Configuring socket')
+            await setupSocket(
+                projectConfig.projectLocation,
+                projectConfig.socket,
+                projectConfig.projectType
+            )
+            s.stop('Configured socket')
+        }
 
-        s.start('Configuring cron')
-        await setupCron(
-            projectConfig.projectLocation,
-            projectConfig.cron,
-            projectConfig.projectType
-        )
-        s.stop('Configured cron')
+        if (projectConfig.cron) {
+            s.start('Configuring cron')
+            await setupCron(
+                projectConfig.projectLocation,
+                projectConfig.cron,
+                projectConfig.projectType
+            )
+            s.stop('Configured cron')
+        }
 
-        s.start('Setting up swagger')
-        await setupSwagger(
-            projectConfig.projectLocation,
-            projectConfig.swagger,
-            projectConfig.projectType
-        )
-        s.stop('Setup swagger')
+        if (projectConfig.swagger) {
+            s.start('Setting up swagger')
+            await setupSwagger(
+                projectConfig.projectLocation,
+                projectConfig.swagger,
+                projectConfig.projectType
+            )
+            s.stop('Swagger setup complete')
+        }
 
-        s.start('Setting up docker')
-        await setupDocker(projectConfig.projectLocation, projectConfig.docker)
-        s.stop('Setup docker')
+        if (projectConfig.docker) {
+            s.start('Setting up docker')
+            await setupDocker(projectConfig.projectLocation, projectConfig.docker)
+            s.stop('Docker setup complete')
+        }
 
         outro('Project setup complete.')
     } catch (err) {
@@ -144,7 +148,6 @@ const setupProjectType = async (projectLocation: string, projectType: ProjectTyp
         delete packageJsonObj.scripts['prettier-js']
 
         // remove typescript dependencies
-        // Todo remove typescript eslint dependencies also
         delete packageJsonObj.devDependencies['@types/bcrypt']
         delete packageJsonObj.devDependencies['@types/cors']
         delete packageJsonObj.devDependencies['@types/express']
@@ -266,22 +269,5 @@ const setupSwagger = async (
 }
 
 const setupDocker = async (projectLocation: string, docker: boolean) => {
-    if (docker) {
-        return
-    }
-
-    //TODO make a setup docker class with handler as folders
-
-    //remove docker files
-    const dockerfileDevLocation = path.join(projectLocation, 'Dockerfile-dev')
-    const dockerfileProdLocation = path.join(projectLocation, 'Dockerfile-prod')
-
-    await fs.rm(dockerfileDevLocation)
-    await fs.rm(dockerfileProdLocation)
-
-    const dockerComposeLocation = path.join(projectLocation, 'docker-compose.yml')
-    await fs.rm(dockerComposeLocation)
-
-    const dockerIgnoreLocation = path.join(projectLocation, '.dockerignore')
-    await fs.rm(dockerIgnoreLocation)
+    await SetupDocker.init(projectLocation, docker)
 }

@@ -4,6 +4,7 @@ import { ProjectType } from '../prompts/enums'
 
 class SetupCron {
     public static async init(projectLocation: string, cron: boolean, projectType: ProjectType) {
+        // if cron is required then no need to delete cron files
         if (cron) return
 
         await this.dependencies(projectLocation)
