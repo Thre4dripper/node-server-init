@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
-import { initPrompts } from './src/prompts/initPrompts'
-import { installScript } from './src/scripts/installScript'
-
-;(async () => {
-    const projectConfig = await initPrompts(false)
+import { initPrompts } from './src/prompts/initPrompts';
+import { installScript } from './src/scripts/installScript';
+(async () => {
+    const projectConfig = await initPrompts(false);
 
     if (!projectConfig) {
-        return
+        return;
     }
-    await installScript(projectConfig)
-})()
+    await installScript(projectConfig);
+})();

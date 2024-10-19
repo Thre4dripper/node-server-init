@@ -1,42 +1,43 @@
 {
-  "name": "node-server-init",
-  "version": "1.0.28",
-  "description": "cli tool for initializing service based backend projects",
-  "main": "dist/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Thre4dripper/node-server-init.git"
-  },
-  "scripts": {
-    "build": "tsc",
-    "build-local": "ts-node buildScript.ts",
-    "start": "yarn preview",
-    "dev": "nodemon index.ts",
-    "preview": "yarn build-local && npm link && node-server-init"
-  },
-  "bin": {
-    "node-server-init": "./dist/index.js"
-  },
-  "keywords": [
-    "cli",
-    "backend",
-    "express",
-    "mongoose",
-    "mongodb",
-    "node"
-  ],
-  "author": "Ijlal Ahmad",
-  "license": "MIT",
-  "dependencies": {
-    "@clack/prompts": "^0.7.0",
-    "shelljs": "^0.8.5"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.6",
-    "@types/shelljs": "^0.8.15",
-    "nodemon": "^3.0.2",
-    "prettier": "^3.1.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
-  }
+    "name": "node-server-init",
+    "version": "1.1.0",
+    "description": "cli tool for initializing service based backend projects",
+    "main": "dist/index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Thre4dripper/node-server-init.git"
+    },
+    "scripts": {
+        "build": "tsc",
+        "build-local": "ts-node buildScript.ts",
+        "start": "yarn preview",
+        "dev": "nodemon index.ts",
+        "preview": "yarn build-local && npm link && node-server-init",
+        "prettify": "prettier --write ."
+    },
+    "bin": {
+        "node-server-init": "./dist/index.js"
+    },
+    "keywords": [
+        "cli",
+        "backend",
+        "express",
+        "mongoose",
+        "mongodb",
+        "node"
+    ],
+    "author": "Ijlal Ahmad",
+    "license": "MIT",
+    "dependencies": {
+        "@clack/prompts": "^0.7.0",
+        "shelljs": "^0.8.5"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.6",
+        "@types/shelljs": "^0.8.15",
+        "nodemon": "^3.0.2",
+        "prettier": "^3.1.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    }
 }

@@ -1,24 +1,24 @@
-import { ApiType, Database, InstallationType, ProjectType } from './enums'
+import { ApiType, Database, InstallationType, ProjectType } from './enums';
 
 export interface Apis {
-    type: ApiType,
-    require: boolean
+    type: ApiType;
+    require: boolean;
 }
 
 export interface SwaggerSetup {
-    enabled: boolean
-    path?: string
+    enabled: boolean;
+    path?: string;
 }
 
 export interface ProjectConfig {
     projectLocation: string;
     projectName: string;
-    projectType: ProjectType
-    database: Database
-    installationType: InstallationType
-    apis: Apis[]
-    socket: boolean
-    cron: boolean
-    swagger: SwaggerSetup,
-    docker: boolean
+    projectType: ProjectType;
+    database: Database;
+    installationType: InstallationType;
+    apis: Apis[];
+    socket: boolean;
+    cron: boolean;
+    swagger: SwaggerSetup;
+    docker: boolean;
 }

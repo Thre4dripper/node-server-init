@@ -51,15 +51,15 @@ https://github.com/Thre4dripper/node-server-init/assets/82382156/3eda5aac-ee8f-4
 
 This npm package provides a flexible setup for Node.js server projects with the following features:
 
-- **Node.js, Express, TypeScript**: Utilizes a robust setup using Node.js, Express, and TypeScript.
-- **Sequelize & Mongoose**: Integrations with Sequelize for SQL database operations and Mongoose for MongoDB.
-- **Database Compatibility**: Allows interaction with various databases such as MySQL, PostgreSQL, MariaDB, Sqlite,
-  MSSql, MongoDB.
-- **Validation Mechanism**: Built-in validations for incoming request payloads.
-- **Automated Swagger Documentation**: Automatically generated API documentation available at `/api-docs`.
-- **Service-Based Architecture**: Employs a modular approach for better organization and scalability.
-- **Socket Events**: Handles socket event management using Socket.io.
-- **Dockerized Deployment**: Supports Docker for easy deployment.
+-   **Node.js, Express, TypeScript**: Utilizes a robust setup using Node.js, Express, and TypeScript.
+-   **Sequelize & Mongoose**: Integrations with Sequelize for SQL database operations and Mongoose for MongoDB.
+-   **Database Compatibility**: Allows interaction with various databases such as MySQL, PostgreSQL, MariaDB, Sqlite,
+    MSSql, MongoDB.
+-   **Validation Mechanism**: Built-in validations for incoming request payloads.
+-   **Automated Swagger Documentation**: Automatically generated API documentation available at `/api-docs`.
+-   **Service-Based Architecture**: Employs a modular approach for better organization and scalability.
+-   **Socket Events**: Handles socket event management using Socket.io.
+-   **Dockerized Deployment**: Supports Docker for easy deployment.
 
 ## Project Structure
 

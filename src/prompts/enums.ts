@@ -1,29 +1,29 @@
 export enum InstallationType {
-    All = "all",
-    Custom = "custom"
+    All = 'all',
+    Custom = 'custom',
 }
 
 export enum ProjectType {
     Typescript = 'ts',
-    Javascript = 'js'
+    Javascript = 'js',
 }
 
 export enum ApiType {
-    GET = "get",
-    POST = "post",
-    PUT = "put",
-    DELETE = "delete",
-    PATCH = "patch"
+    GET = 'get',
+    POST = 'post',
+    PUT = 'put',
+    DELETE = 'delete',
+    PATCH = 'patch',
 }
 
 export enum Database {
-    Mongo = "mongo",
-    Mysql = "mysql",
-    Postgres = "postgres",
-    Sqlite = "sqlite",
-    Mssql = "mssql",
-    MariaDB = "mariadb",
-    DB2 = "db2",
-    Snowflake = "snowflake",
-    Oracle = "oracle",
+    Mongo = 'mongo',
+    Mysql = 'mysql',
+    Postgres = 'postgres',
+    Sqlite = 'sqlite',
+    Mssql = 'mssql',
+    MariaDB = 'mariadb',
+    DB2 = 'db2',
+    Snowflake = 'snowflake',
+    Oracle = 'oracle',
 }

@@ -1,208 +1,207 @@
 name: Version Check and Publish
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+    workflow_dispatch:
+    push:
+        branches:
+            - main
 
 permissions:
-  contents: read
-  packages: write
-  issues: write
+    contents: read
+    packages: write
+    issues: write
 
 env:
-  REPO_NAME: ${GITHUB_REPOSITORY#*/}
+    REPO_NAME: ${GITHUB_REPOSITORY#*/}
 
 jobs:
-  check-build:
-    name: Check Build
-    runs-on: ubuntu-latest
-    outputs:
-      should_continue: ${{ steps.check_build.outputs.should_continue }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    check-build:
+        name: Check Build
+        runs-on: ubuntu-latest
+        outputs:
+            should_continue: ${{ steps.check_build.outputs.should_continue }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
 
-      - name: Build
-        id: check_build
-        run: |
-          rm -rf dist
-          yarn build || echo "should_continue=false" >> $GITHUB_OUTPUT
-          echo "should_continue=true" >> $GITHUB_OUTPUT
+            - name: Build
+              id: check_build
+              run: |
+                  rm -rf dist
+                  yarn build || echo "should_continue=false" >> $GITHUB_OUTPUT
+                  echo "should_continue=true" >> $GITHUB_OUTPUT
 
-  check-version:
-    name: Check version
-    needs: check-build
-    if: needs.check-build.outputs.should_continue == 'true'
-    runs-on: ubuntu-latest
-    outputs:
-      should_update: ${{ steps.compare_versions.outputs.should_update }}
-      should_publish: ${{ steps.compare_versions.outputs.should_publish }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    check-version:
+        name: Check version
+        needs: check-build
+        if: needs.check-build.outputs.should_continue == 'true'
+        runs-on: ubuntu-latest
+        outputs:
+            should_update: ${{ steps.compare_versions.outputs.should_update }}
+            should_publish: ${{ steps.compare_versions.outputs.should_publish }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Compare versions and set output
-        id: compare_versions
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          NPM_VERSION=$(npm view ${{ env.REPO_NAME }} version)
-          
-          HIGHEST_VERSION=$(echo -e "$CURRENT_VERSION\n$NPM_VERSION" | sort -V | tail -n 1)
-          
-          if [ "$HIGHEST_VERSION" = "$NPM_VERSION" ]; then
-            echo "should_update=true" >> $GITHUB_OUTPUT
-          elif [ "$HIGHEST_VERSION" = "$CURRENT_VERSION" ]; then
-            echo "should_publish=true" >> $GITHUB_OUTPUT
-          fi
+            - name: Compare versions and set output
+              id: compare_versions
+              run: |
+                  CURRENT_VERSION=$(node -p "require('./package.json').version")
+                  NPM_VERSION=$(npm view ${{ env.REPO_NAME }} version)
 
+                  HIGHEST_VERSION=$(echo -e "$CURRENT_VERSION\n$NPM_VERSION" | sort -V | tail -n 1)
 
-  build:
-    name: Build
-    needs: check-version
-    if: needs.check-version.outputs.should_publish == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+                  if [ "$HIGHEST_VERSION" = "$NPM_VERSION" ]; then
+                    echo "should_update=true" >> $GITHUB_OUTPUT
+                  elif [ "$HIGHEST_VERSION" = "$CURRENT_VERSION" ]; then
+                    echo "should_publish=true" >> $GITHUB_OUTPUT
+                  fi
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+    build:
+        name: Build
+        needs: check-version
+        if: needs.check-version.outputs.should_publish == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Build
-        run: rm -rf dist && yarn build
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
 
-      - name: Prepare Template
-        run: |
-          cd dist
-          git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template.git template
-          cd template
-          rm -rf .git && rm -rf .github
-          cd ../
-          cp -r template template-ts && cp -r template template-js
-          cd template-ts && rm -rf src-javascript && mv src-typescript src
-          sed -i 's|"rootDir": "./src-typescript"|"rootDir": "./src"|g' tsconfig.json
-          cd ../
-          cd template-js && rm -rf src-typescript && mv src-javascript src
-          rm tsconfig.json
-          cd ../
-          rm -rf template
+            - name: Build
+              run: rm -rf dist && yarn build
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: |
-            ./**
-            !node_modules/**
+            - name: Prepare Template
+              run: |
+                  cd dist
+                  git clone https://github.com/Thre4dripper/NodeTs-Express-Service-Based-Template.git template
+                  cd template
+                  rm -rf .git && rm -rf .github
+                  cd ../
+                  cp -r template template-ts && cp -r template template-js
+                  cd template-ts && rm -rf src-javascript && mv src-typescript src
+                  sed -i 's|"rootDir": "./src-typescript"|"rootDir": "./src"|g' tsconfig.json
+                  cd ../
+                  cd template-js && rm -rf src-typescript && mv src-javascript src
+                  rm tsconfig.json
+                  cd ../
+                  rm -rf template
 
-  publish:
-    name: Publish to NPM
-    needs: build
-    if: needs.build.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: .
+            - name: Upload Build Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build
+                  path: |
+                      ./**
+                      !node_modules/**
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+    publish:
+        name: Publish to NPM
+        needs: build
+        if: needs.build.result == 'success'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Get build artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: build
+                  path: .
 
-      - name: Publish package on NPM
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  registry-url: 'https://registry.npmjs.org'
 
-  release:
-    name: Create Release
-    needs: publish
-    if: needs.publish.result == 'success'
-    runs-on: ubuntu-latest
-    outputs:
-      VERSION: ${{ steps.get_version.outputs.VERSION }}
-    steps:
-      - name: Get build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: .
+            - name: Publish package on NPM
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+    release:
+        name: Create Release
+        needs: publish
+        if: needs.publish.result == 'success'
+        runs-on: ubuntu-latest
+        outputs:
+            VERSION: ${{ steps.get_version.outputs.VERSION }}
+        steps:
+            - name: Get build artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: build
+                  path: .
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Get Version
-        id: get_version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Create Release
-        id: create_release
-        env:
-          tag: v${{ steps.get_version.outputs.VERSION }}
-          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-        run: |
-          gh release create "$tag" \
-              --repo="$GITHUB_REPOSITORY" \
-              --title="Release $tag" \
-              --generate-notes
+            - name: Get Version
+              id: get_version
+              run: |
+                  VERSION=$(node -p "require('./package.json').version")
+                  echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-  update-version:
-    name: Update version
-    needs: check-version
-    if: needs.check-version.outputs.should_update == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.WORKFLOW_TOKEN }}
+            - name: Create Release
+              id: create_release
+              env:
+                  tag: v${{ steps.get_version.outputs.VERSION }}
+                  GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+              run: |
+                  gh release create "$tag" \
+                      --repo="$GITHUB_REPOSITORY" \
+                      --title="Release $tag" \
+                      --generate-notes
 
-      - name: Loop until versions match
-        run: |
-          while [ "$(npm view ${{ env.REPO_NAME }} version)" != "$(node -p "require('./package.json').version")" ]; do
-            git config --global user.name 'Version Bot'
-            git config --global user.email 'versionbot@gmail.com'
-            npm version patch -m "Update version to %s"
-          done
+    update-version:
+        name: Update version
+        needs: check-version
+        if: needs.check-version.outputs.should_update == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.WORKFLOW_TOKEN }}
 
-      - name: Update version to next patch
-        run: |
-          git config --global user.name 'Version Bot'
-          git config --global user.email 'versionbot@gmail.com'
-          npm version patch -m "Update version to %s"
-          git push
+            - name: Loop until versions match
+              run: |
+                  while [ "$(npm view ${{ env.REPO_NAME }} version)" != "$(node -p "require('./package.json').version")" ]; do
+                    git config --global user.name 'Version Bot'
+                    git config --global user.email 'versionbot@gmail.com'
+                    npm version patch -m "Update version to %s"
+                  done
+
+            - name: Update version to next patch
+              run: |
+                  git config --global user.name 'Version Bot'
+                  git config --global user.email 'versionbot@gmail.com'
+                  npm version patch -m "Update version to %s"
+                  git push

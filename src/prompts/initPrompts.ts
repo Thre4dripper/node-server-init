@@ -1,40 +1,40 @@
-import { confirm, intro, isCancel, log, multiselect, note, select, text } from '@clack/prompts'
-import { ApiType, Database, InstallationType, ProjectType } from './enums'
-import { ProjectConfig } from './interfaces'
-import path from 'node:path'
+import { confirm, intro, isCancel, log, multiselect, note, select, text } from '@clack/prompts';
+import { ApiType, Database, InstallationType, ProjectType } from './enums';
+import { ProjectConfig } from './interfaces';
+import path from 'node:path';
 
 const startPromptSession = () => {
-    intro('Welcome to Node Initializer CLI tool')
+    intro('Welcome to Node Initializer CLI tool');
 
     note(
         'This tool will help you to setup backend project with express, mongoose, socket.io, swagger, docker and more.',
         'Press Ctrl+C to cancel.'
-    )
-}
+    );
+};
 
 export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | undefined> => {
     //getting folder name from command line arguments
-    let folderName
+    let folderName;
     if (process.argv.length <= 2) {
-        log.error('No arguments provided --help for more info')
-        return
+        log.error('No arguments provided --help for more info');
+        return;
     }
 
     if (process.argv[2] === '--help') {
-        log.info('node-initializer <folder-name> (for specific folder)')
-        log.info('node-initializer . (to use current folder)')
-        return
+        log.info('node-initializer <folder-name> (for specific folder)');
+        log.info('node-initializer . (to use current folder)');
+        return;
     }
 
-    folderName = process.argv[2]
+    folderName = process.argv[2];
     if (folderName === '.') {
-        folderName = process.cwd()
+        folderName = process.cwd();
     } else {
-        folderName = path.join(process.cwd(), folderName)
+        folderName = path.join(process.cwd(), folderName);
     }
 
     //flow starts here
-    if (!restarted) startPromptSession()
+    if (!restarted) startPromptSession();
 
     const projectName = await text({
         message: 'What is your project name?',
@@ -42,17 +42,17 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         initialValue: 'my-project',
         validate: (value) => {
             if (value.length < 3) {
-                return 'Name must be at least 3 characters long'
+                return 'Name must be at least 3 characters long';
             }
         },
-    })
+    });
 
     if (isCancel(projectName)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
-    log.info('Use arrow keys to navigate. Press Enter to select.')
+    log.info('Use arrow keys to navigate. Press Enter to select.');
 
     const projectType = await select({
         message: 'Pick a project type.',
@@ -60,11 +60,11 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             { value: ProjectType.Typescript, label: 'TypeScript', hint: 'Recommended' },
             { value: ProjectType.Javascript, label: 'JavaScript' },
         ],
-    })
+    });
 
     if (isCancel(projectType)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     const database = await select({
@@ -80,11 +80,11 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             { value: Database.Snowflake, label: 'Snowflake', hint: 'Recommended for production' },
             { value: Database.Oracle, label: 'Oracle', hint: 'Recommended for production' },
         ],
-    })
+    });
 
     if (isCancel(database)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     const installationType = await select({
@@ -93,11 +93,11 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             { value: InstallationType.All, label: 'All', hint: 'Recommended' },
             { value: InstallationType.Custom, label: 'Custom', hint: 'Select what you want' },
         ],
-    })
+    });
 
     if (isCancel(installationType)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     if (installationType === InstallationType.All) {
@@ -121,12 +121,12 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
                 path: '/api-docs',
             },
             docker: true,
-        }
+        };
     }
 
     log.info(
         'Multiple options can be selected by pressing <space>. Press <a> to toggle all options.'
-    )
+    );
     const apiTypes = await multiselect({
         message:
             'Select API types. (At least one is required) [POST is required for initial template to run]',
@@ -140,38 +140,38 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         initialValues: [ApiType.POST],
         cursorAt: ApiType.POST,
         required: true,
-    })
+    });
 
     if (isCancel(apiTypes)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     const socket = await confirm({
         message: 'Do you want to use socket?',
-    })
+    });
 
     if (isCancel(socket)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     const cron = await confirm({
         message: 'Do you want to use cron?',
-    })
+    });
 
     if (isCancel(cron)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     const swagger = await confirm({
         message: 'Do you want to use swagger?',
-    })
+    });
 
     if (isCancel(swagger)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     const swaggerPath = swagger
@@ -181,28 +181,28 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
               initialValue: '/swagger',
               validate: (value) => {
                   if (value[0] !== '/') {
-                      return 'Path must start with /'
+                      return 'Path must start with /';
                   }
-                  const regex = /^\/[a-zA-Z0-9-_]+$/
+                  const regex = /^\/[a-zA-Z0-9-_]+$/;
                   if (!regex.test(value)) {
-                      return 'Invalid path'
+                      return 'Invalid path';
                   }
               },
           })
-        : undefined
+        : undefined;
 
     if (isCancel(swaggerPath)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     const docker = await confirm({
         message: 'Do you want to use docker?',
-    })
+    });
 
     if (isCancel(docker)) {
-        log.warning('Cancelled by user')
-        return await startOver()
+        log.warning('Cancelled by user');
+        return await startOver();
     }
 
     return {
@@ -215,7 +215,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             return {
                 type: apiType as ApiType,
                 require: apiTypes.includes(apiType),
-            }
+            };
         }),
         socket: socket as boolean,
         cron: cron as boolean,
@@ -224,22 +224,22 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
             path: swagger ? (swaggerPath as string) : undefined,
         },
         docker: docker as boolean,
-    }
-}
+    };
+};
 
 const startOver = async (): Promise<ProjectConfig | undefined> => {
     const shouldStartOver = await confirm({
         message: 'Do you want to start over?',
-    })
+    });
 
     if (isCancel(shouldStartOver)) {
-        log.warning('Exited from Node Initializer')
-        return
+        log.warning('Exited from Node Initializer');
+        return;
     }
 
     if (shouldStartOver) {
-        return await initPrompts(true)
+        return await initPrompts(true);
     }
 
-    log.warning('Exited from Node Initializer')
-}
+    log.warning('Exited from Node Initializer');
+};
