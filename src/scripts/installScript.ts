@@ -9,6 +9,7 @@ import SetupSocket from '../handlers/setupSocket';
 import SetupSwagger from '../handlers/setupSwagger';
 import SetupCron from '../handlers/setupCron';
 import SetupDocker from '../handlers/setupDocker';
+import SetupReadme from '../handlers/setupReadme';
 
 export const installScript = async (projectConfig: ProjectConfig) => {
     try {
@@ -70,6 +71,8 @@ export const installScript = async (projectConfig: ProjectConfig) => {
             await setupDocker(projectConfig.projectLocation, projectConfig.docker);
             s.stop('Docker setup complete');
         }
+
+        await setupReadme(projectConfig);
 
         outro('Project setup complete.');
     } catch (err) {
@@ -276,4 +279,8 @@ const setupSwagger = async (
 
 const setupDocker = async (projectLocation: string, docker: boolean) => {
     await SetupDocker.init(projectLocation, docker);
+};
+
+const setupReadme = async (projectConfig: ProjectConfig) => {
+    await SetupReadme.init(projectConfig);
 };
