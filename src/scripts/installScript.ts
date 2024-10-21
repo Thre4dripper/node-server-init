@@ -36,41 +36,33 @@ export const installScript = async (projectConfig: ProjectConfig) => {
         );
         s.stop('Api controllers setup complete');
 
-        if (projectConfig.socket) {
-            s.start('Configuring socket');
-            await setupSocket(
-                projectConfig.projectLocation,
-                projectConfig.socket,
-                projectConfig.projectType
-            );
-            s.stop('Configured socket');
-        }
+        s.start('Configuring socket');
+        await setupSocket(
+            projectConfig.projectLocation,
+            projectConfig.socket,
+            projectConfig.projectType
+        );
+        s.stop('Configured socket');
 
-        if (projectConfig.cron) {
-            s.start('Configuring cron');
-            await setupCron(
-                projectConfig.projectLocation,
-                projectConfig.cron,
-                projectConfig.projectType
-            );
-            s.stop('Configured cron');
-        }
+        s.start('Configuring cron');
+        await setupCron(
+            projectConfig.projectLocation,
+            projectConfig.cron,
+            projectConfig.projectType
+        );
+        s.stop('Configured cron');
 
-        if (projectConfig.swagger) {
-            s.start('Setting up swagger');
-            await setupSwagger(
-                projectConfig.projectLocation,
-                projectConfig.swagger,
-                projectConfig.projectType
-            );
-            s.stop('Swagger setup complete');
-        }
+        s.start('Configuring swagger');
+        await setupSwagger(
+            projectConfig.projectLocation,
+            projectConfig.swagger,
+            projectConfig.projectType
+        );
+        s.stop('Configured swagger');
 
-        if (projectConfig.docker) {
-            s.start('Setting up docker');
-            await setupDocker(projectConfig.projectLocation, projectConfig.docker);
-            s.stop('Docker setup complete');
-        }
+        s.start('Configuring docker');
+        await setupDocker(projectConfig.projectLocation, projectConfig.docker);
+        s.stop('Configured docker');
 
         await setupReadme(projectConfig);
 
