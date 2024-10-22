@@ -162,6 +162,9 @@ class SetupCron {
             `CronJob.${projectType}`
         );
         await fs.rm(cronEnums);
+
+        const cronBuilder = path.join(projectLocation, 'src', 'app', 'utils', `CronBuilder.${projectType}`);
+        await fs.rm(cronBuilder);
     }
 }
 
