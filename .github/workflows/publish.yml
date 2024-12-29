@@ -143,6 +143,11 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+            - name: Publish package on GitHub
+              run: npm publish --registry=https://npm.pkg.github.com
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     release:
         name: Create Release
         needs: publish
