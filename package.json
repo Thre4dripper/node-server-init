@@ -13,7 +13,7 @@
         "start": "yarn preview",
         "dev": "nodemon index.ts",
         "preview": "yarn build-local && npm link && node-server-init",
-        "prettify": "prettier --write ."
+        "format": "prettier --write ."
     },
     "bin": {
         "node-server-init": "./dist/index.js"
