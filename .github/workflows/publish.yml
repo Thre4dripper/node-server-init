@@ -149,7 +149,7 @@ jobs:
             - name: Publish to Github Packages
               run: |
                   echo "Configuring for Github Packages"
-                  jq '.name = "@thre4dripper/'${{ env.REPO_NAME }}'" package.json > package.json.tmp && mv package.json.tmp package.json
+                  jq ".name = \"@thre4dripper/${{ env.REPO_NAME }}\"" package.json > package.json.tmp && mv package.json.tmp package.json                
                   npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
                   npm publish --registry=https://npm.pkg.github.com --access=public
               env:
