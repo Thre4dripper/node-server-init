@@ -5,6 +5,8 @@ import shell from 'shelljs'
     shell.rm('-rf', 'dist')
     //build
     shell.exec('tsc')
+    //make dist/index.js executable
+    shell.chmod('+x', 'dist/index.js')
     //clone template
     shell.cd('dist')
     shell.exec(
