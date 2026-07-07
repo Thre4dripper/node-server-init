@@ -1,5 +1,5 @@
 import { confirm, intro, isCancel, log, multiselect, note, select, text } from '@clack/prompts';
-import { ApiType, Database, InstallationType, ProjectType } from './enums';
+import { ApiType, Database, InstallationType, PackageManager, ProjectType } from './enums';
 import { ProjectConfig } from './interfaces';
 import path from 'node:path';
 
@@ -87,6 +87,15 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return await startOver();
     }
 
+    const redis = await confirm({
+        message: 'Do you want to use Redis?',
+    });
+
+    if (isCancel(redis)) {
+        log.warning('Cancelled by user');
+        return await startOver();
+    }
+
     const installationType = await select({
         message: 'Pick a installation type.',
         options: [
@@ -101,12 +110,29 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     }
 
     if (installationType === InstallationType.All) {
+        const packageManager = await select({
+            message: 'Pick a package manager.',
+            options: [
+                { value: PackageManager.Npm, label: 'npm', hint: 'Default Node package manager' },
+                { value: PackageManager.Yarn, label: 'yarn' },
+                { value: PackageManager.Pnpm, label: 'pnpm', hint: 'Recommended' },
+            ],
+        });
+
+        if (isCancel(packageManager)) {
+            log.warning('Cancelled by user');
+            return await startOver();
+        }
+
         return {
             projectLocation: folderName,
             projectName: projectName as string,
             projectType: projectType as ProjectType,
             database: database as Database,
             installationType: installationType as InstallationType,
+            packageManager: packageManager as PackageManager,
+            grpc: true,
+            redis: true,
             apis: [
                 { type: ApiType.GET, require: true },
                 { type: ApiType.POST, require: true },
@@ -127,6 +153,7 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
     log.info(
         'Multiple options can be selected by pressing <space>. Press <a> to toggle all options.'
     );
+
     const apiTypes = await multiselect({
         message:
             'Select API types. (At least one is required) [POST is required for initial template to run]',
@@ -165,6 +192,15 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return await startOver();
     }
 
+    const grpc = await confirm({
+        message: 'Do you want to use gRPC?',
+    });
+
+    if (isCancel(grpc)) {
+        log.warning('Cancelled by user');
+        return await startOver();
+    }
+
     const swagger = await confirm({
         message: 'Do you want to use swagger?',
     });
@@ -176,19 +212,19 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
 
     const swaggerPath = swagger
         ? await text({
-              message: 'What is your swagger path?',
-              placeholder: '/swagger',
-              initialValue: '/swagger',
-              validate: (value) => {
-                  if (value[0] !== '/') {
-                      return 'Path must start with /';
-                  }
-                  const regex = /^\/[a-zA-Z0-9-_]+$/;
-                  if (!regex.test(value)) {
-                      return 'Invalid path';
-                  }
-              },
-          })
+            message: 'What is your swagger path?',
+            placeholder: '/swagger',
+            initialValue: '/swagger',
+            validate: (value) => {
+                if (value[0] !== '/') {
+                    return 'Path must start with /';
+                }
+                const regex = /^\/[a-zA-Z0-9-_]+$/;
+                if (!regex.test(value)) {
+                    return 'Invalid path';
+                }
+            },
+        })
         : undefined;
 
     if (isCancel(swaggerPath)) {
@@ -205,12 +241,29 @@ export const initPrompts = async (restarted: boolean): Promise<ProjectConfig | u
         return await startOver();
     }
 
+    const packageManager = await select({
+        message: 'Pick a package manager.',
+        options: [
+            { value: PackageManager.Npm, label: 'npm', hint: 'Default Node package manager' },
+            { value: PackageManager.Yarn, label: 'yarn' },
+            { value: PackageManager.Pnpm, label: 'pnpm', hint: 'Recommended' },
+        ],
+    });
+
+    if (isCancel(packageManager)) {
+        log.warning('Cancelled by user');
+        return await startOver();
+    }
+
     return {
         projectLocation: folderName,
         projectName: projectName as string,
         projectType: projectType as ProjectType,
         database: database as Database,
         installationType: installationType as InstallationType,
+        packageManager: packageManager as PackageManager,
+        grpc: grpc as boolean,
+        redis: redis as boolean,
         apis: Object.values(ApiType).map((apiType) => {
             return {
                 type: apiType as ApiType,

@@ -1,4 +1,4 @@
-import { ApiType, Database, InstallationType, ProjectType } from './enums';
+import { ApiType, Database, InstallationType, PackageManager, ProjectType } from './enums';
 
 export interface Apis {
     type: ApiType;
@@ -16,6 +16,9 @@ export interface ProjectConfig {
     projectType: ProjectType;
     database: Database;
     installationType: InstallationType;
+    packageManager: PackageManager;
+    grpc: boolean;
+    redis: boolean;
     apis: Apis[];
     socket: boolean;
     cron: boolean;

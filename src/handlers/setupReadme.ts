@@ -1,7 +1,7 @@
 import { ProjectConfig } from '../prompts/interfaces';
 import fs from 'fs/promises';
 import path from 'node:path';
-import { ApiType } from '../prompts/enums';
+import { ApiType, PackageManager } from '../prompts/enums';
 
 class SetupReadme {
     public static async init(projectConfig: ProjectConfig) {
@@ -224,6 +224,36 @@ class SetupReadme {
         const readmeLocation = path.join(projectLocation, 'README.md');
         const readmeContents = await fs.readFile(readmeLocation, 'utf8');
         const readmeLines = readmeContents.split('\n');
+        const readmeModified = this.applyPackageManagerCommands(
+            readmeLines,
+            projectConfig.packageManager
+        );
+
+        await fs.writeFile(readmeLocation, readmeModified);
+    }
+
+    private static applyPackageManagerCommands(
+        readmeLines: string[],
+        packageManager: PackageManager
+    ) {
+        const installCommand =
+            packageManager === PackageManager.Npm
+                ? 'npm install'
+                : packageManager === PackageManager.Yarn
+                  ? 'yarn install'
+                  : 'pnpm install';
+        const scriptCommand =
+            packageManager === PackageManager.Npm
+                ? 'npm run'
+                : packageManager === PackageManager.Yarn
+                  ? 'yarn'
+                  : 'pnpm run';
+        const addCommand =
+            packageManager === PackageManager.Npm
+                ? 'npm install'
+                : packageManager === PackageManager.Yarn
+                  ? 'yarn add'
+                  : 'pnpm add';
 
         const linesToBeRemoved: number[] = [];
 
@@ -243,8 +273,13 @@ class SetupReadme {
             (_, index) => !linesToBeRemoved.includes(index)
         );
 
-        const readmeModified = filteredReadmeLines.join('\n');
-        await fs.writeFile(readmeLocation, readmeModified);
+        return filteredReadmeLines
+            .join('\n')
+            .replace(/\$ npm install or yarn/g, `$ ${installCommand}`)
+            .replace(/\$ npm run dev or yarn dev/g, `$ ${scriptCommand} dev`)
+            .replace(/\$ npm run build or yarn build/g, `$ ${scriptCommand} build`)
+            .replace(/\$ npm run start or yarn start/g, `$ ${scriptCommand} start`)
+            .replace(/\$ npm install ([^\n]+)/g, (_match, packageName) => `$ ${addCommand} ${packageName}`);
     }
 }
 

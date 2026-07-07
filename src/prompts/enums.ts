@@ -3,6 +3,12 @@ export enum InstallationType {
     Custom = 'custom',
 }
 
+export enum PackageManager {
+    Npm = 'npm',
+    Yarn = 'yarn',
+    Pnpm = 'pnpm',
+}
+
 export enum ProjectType {
     Typescript = 'ts',
     Javascript = 'js',
