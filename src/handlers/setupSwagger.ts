@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'node:path';
 import { SwaggerSetup } from '../prompts/interfaces';
 import { ProjectType } from '../prompts/enums';
+import { removeAllMarkedBlocks } from './markerUtils';
 
 class SetupSwagger {
     public static async init(
@@ -44,7 +45,7 @@ class SetupSwagger {
 
     private static async dependencies(projectLocation: string) {
         const packageJsonLocation = path.join(projectLocation, 'package.json');
-        const packageJson = require(packageJsonLocation);
+        const packageJson = JSON.parse(await fs.readFile(packageJsonLocation, 'utf8'));
         delete packageJson.dependencies['swagger-ui-express'];
         delete packageJson.devDependencies['@types/swagger-ui-express'];
         await fs.writeFile(packageJsonLocation, JSON.stringify(packageJson, null, 2));
@@ -111,7 +112,11 @@ class SetupSwagger {
         const filteredExpressConfigLines = expressConfigLines.filter(
             (_, index) => !linesToBeRemoved.includes(index)
         );
-        const expressConfigModified = filteredExpressConfigLines.join('\n');
+        const expressConfigModified = removeAllMarkedBlocks(
+            filteredExpressConfigLines.join('\n'),
+            'start swagger middleware',
+            'end swagger middleware'
+        );
         await fs.writeFile(expressConfigLocation, expressConfigModified);
     }
 
