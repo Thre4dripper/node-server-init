@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'node:path';
 import { ProjectType } from '../prompts/enums';
+import { removeAllMarkedBlocks, pruneUnusedLogger } from './markerUtils';
 
 class SetupCron {
     public static async init(projectLocation: string, cron: boolean, projectType: ProjectType) {
@@ -11,12 +12,13 @@ class SetupCron {
         await this.deleteCronConfig(projectLocation, projectType);
         await this.removeFromServer(projectLocation, projectType);
         await this.removeFromMasterController(projectLocation, projectType);
+        await this.removeFromHandlers(projectLocation, projectType);
         await this.removeCronFilesAndFolders(projectLocation, projectType);
     }
 
     private static async dependencies(projectLocation: string) {
         const packageJsonLocation = path.join(projectLocation, 'package.json');
-        const packageJson = require(packageJsonLocation);
+        const packageJson = JSON.parse(await fs.readFile(packageJsonLocation, 'utf8'));
         delete packageJson.dependencies['cron'];
         await fs.writeFile(packageJsonLocation, JSON.stringify(packageJson, null, 2));
     }
@@ -38,10 +40,6 @@ class SetupCron {
         );
 
         linesToBeRemoved.push(cronImportLineIndex);
-
-        const pathImportLineIndex = serverContentLines.findIndex((line) => line.includes('path'));
-
-        linesToBeRemoved.push(pathImportLineIndex);
 
         const cronConfigStartIndex = serverContentLines.findIndex((line) =>
             line.includes('Initialize Cron Jobs')
@@ -109,19 +107,19 @@ class SetupCron {
             linesToBeRemoved.push(i);
         }
 
-        //removing cron controller
-        const cronControllerDocStartIndex = masterControllerLines.findIndex((line) =>
-            line.includes('MasterController.cronController')
+        //removing cron controller method (marker-delimited for resilience)
+        const cronControllerMarkerStart = masterControllerLines.findIndex((line) =>
+            line.includes('start cron controller method')
         );
-        const cronControllerStartIndex = masterControllerLines.findIndex((line) =>
-            line.includes('cronController(')
-        );
-        const cronControllerEndIndex = masterControllerLines.findIndex(
-            (line, index) => line.includes('}') && index > cronControllerStartIndex
+        const cronControllerMarkerEnd = masterControllerLines.findIndex(
+            (line, index) =>
+                line.includes('end cron controller method') && index > cronControllerMarkerStart
         );
 
-        for (let i = cronControllerDocStartIndex - 1; i <= cronControllerEndIndex; i++) {
-            linesToBeRemoved.push(i);
+        if (cronControllerMarkerStart !== -1 && cronControllerMarkerEnd !== -1) {
+            for (let i = cronControllerMarkerStart; i <= cronControllerMarkerEnd; i++) {
+                linesToBeRemoved.push(i);
+            }
         }
 
         //removing cron from master controller
@@ -145,6 +143,27 @@ class SetupCron {
         );
         const masterControllerModified = filteredMasterControllerLines.join('\n');
         await fs.writeFile(masterControllerLocation, masterControllerModified);
+    }
+
+    
+    /**
+     * Strip cron-only code (cron error-handler branches/exports) from the shared
+     * error handlers, then drop the shared logger binding if it is no longer
+     * referenced. Blocks are delimited by `// start cron` ... `// end cron`.
+     */
+    private static async removeFromHandlers(projectLocation: string, projectType: ProjectType) {
+        const targets = [
+            path.join(projectLocation, 'src', 'app', 'handlers', `CustomErrorHandler.${projectType}`),
+            path.join(projectLocation, 'src', 'app', 'handlers', `JoiErrorHandler.${projectType}`),
+        ];
+
+        await Promise.all(
+            targets.map(async (target) => {
+                const contents = await fs.readFile(target, 'utf8');
+                const stripped = removeAllMarkedBlocks(contents, 'start cron', 'end cron');
+                await fs.writeFile(target, pruneUnusedLogger(stripped));
+            })
+        );
     }
 
     private static async removeCronFilesAndFolders(
