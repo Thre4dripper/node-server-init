@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'node:path';
 import { ProjectType } from '../prompts/enums';
+import { removeAllMarkedBlocks, pruneUnusedLogger } from './markerUtils';
 
 class SetupSocket {
     public static async init(projectLocation: string, socket: boolean, projectType: ProjectType) {
@@ -11,12 +12,13 @@ class SetupSocket {
         await this.deleteSocketConfig(projectLocation, projectType);
         await this.removeFromServer(projectLocation, projectType);
         await this.removeFromMasterController(projectLocation, projectType);
-        await this.removeFromRouter(projectLocation, projectType);
+        await this.removeFromHandlers(projectLocation, projectType);
+        await this.removeSocketFilesAndFolders(projectLocation);
     }
 
     private static async dependencies(projectLocation: string) {
         const packageJsonLocation = path.join(projectLocation, 'package.json');
-        const packageJson = require(packageJsonLocation);
+        const packageJson = JSON.parse(await fs.readFile(packageJsonLocation, 'utf8'));
         delete packageJson.dependencies['socket.io'];
         await fs.writeFile(packageJsonLocation, JSON.stringify(packageJson, null, 2));
     }
@@ -110,19 +112,20 @@ class SetupSocket {
             linesToBeRemoved.push(i);
         }
 
-        //removing socket controller
-        const socketControllerDocStartIndex = masterControllerLines.findIndex((line) =>
-            line.includes('MasterController.socketController')
+        //removing socket controller method (marker-delimited for resilience)
+        const socketControllerMarkerStart = masterControllerLines.findIndex((line) =>
+            line.includes('start socket controller method')
         );
-        const socketControllerStartIndex = masterControllerLines.findIndex((line) =>
-            line.includes('socketController(')
-        );
-        const socketControllerEndIndex = masterControllerLines.findIndex(
-            (line, index) => line.includes('}') && index > socketControllerStartIndex
+        const socketControllerMarkerEnd = masterControllerLines.findIndex(
+            (line, index) =>
+                line.includes('end socket controller method') &&
+                index > socketControllerMarkerStart
         );
 
-        for (let i = socketControllerDocStartIndex - 1; i <= socketControllerEndIndex; i++) {
-            linesToBeRemoved.push(i);
+        if (socketControllerMarkerStart !== -1 && socketControllerMarkerEnd !== -1) {
+            for (let i = socketControllerMarkerStart; i <= socketControllerMarkerEnd; i++) {
+                linesToBeRemoved.push(i);
+            }
         }
 
         //removing socketIO from master controller
@@ -148,29 +151,31 @@ class SetupSocket {
         await fs.writeFile(masterControllerLocation, masterControllerModified);
     }
 
-    private static async removeFromRouter(projectLocation: string, projectType: ProjectType) {
-        const routerLocation = path.join(
-            projectLocation,
-            'src',
-            'app',
-            'routes',
-            `user.routes.${projectType}`
+
+    /**
+     * Strip socket-only code (imports, socket error-handler branches/exports)
+     * from the shared error handlers, then drop the shared logger binding if it
+     * is no longer referenced. Blocks are delimited by `// start socket` ...
+     * `// end socket`.
+     */
+    private static async removeFromHandlers(projectLocation: string, projectType: ProjectType) {
+        const targets = [
+            path.join(projectLocation, 'src', 'app', 'handlers', `CustomErrorHandler.${projectType}`),
+            path.join(projectLocation, 'src', 'app', 'handlers', `JoiErrorHandler.${projectType}`),
+        ];
+
+        await Promise.all(
+            targets.map(async (target) => {
+                const contents = await fs.readFile(target, 'utf8');
+                const stripped = removeAllMarkedBlocks(contents, 'start socket', 'end socket');
+                await fs.writeFile(target, pruneUnusedLogger(stripped));
+            })
         );
-        const routerContents = await fs.readFile(routerLocation, 'utf8');
+    }
 
-        const routerLines = routerContents.split('\n');
-
-        const linesToBeRemoved: number[] = [];
-
-        const socketImportLineIndex = routerLines.findIndex((line) => line.includes('socketIO'));
-
-        linesToBeRemoved.push(socketImportLineIndex);
-
-        const filteredRouterLines = routerLines.filter(
-            (_, index) => !linesToBeRemoved.includes(index)
-        );
-        const routerModified = filteredRouterLines.join('\n');
-        await fs.writeFile(routerLocation, routerModified);
+    private static async removeSocketFilesAndFolders(projectLocation: string) {
+        const socketFolder = path.join(projectLocation, 'src', 'app', 'sockets');
+        await fs.rm(socketFolder, { recursive: true });
     }
 }
 
