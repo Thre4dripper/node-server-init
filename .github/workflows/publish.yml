@@ -177,10 +177,46 @@ jobs:
                   }
                   NODE
 
+            - name: Inspect npm OIDC claims
+              run: |
+                  OIDC_RESPONSE="$RUNNER_TEMP/npm-oidc-claims.json"
+
+                  curl --fail-with-body --silent --show-error \
+                    --header "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                    "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" \
+                    --output "$OIDC_RESPONSE"
+
+                  node <<'NODE' "$OIDC_RESPONSE"
+                  const fs = require('node:fs');
+                  const token = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')).value;
+                  const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
+                  const claimNames = [
+                    'aud',
+                    'iss',
+                    'sub',
+                    'repository',
+                    'repository_owner',
+                    'repository_visibility',
+                    'workflow',
+                    'workflow_ref',
+                    'job_workflow_ref',
+                    'ref',
+                    'ref_type',
+                    'environment',
+                  ];
+
+                  for (const claimName of claimNames) {
+                    if (payload[claimName] !== undefined) {
+                      console.log(`${claimName}: ${payload[claimName]}`);
+                    }
+                  }
+                  NODE
+
             - name: Publish package on NPM
               env:
                   NODE_AUTH_TOKEN: ''
                   NPM_CONFIG_PROVENANCE: true
+                  NPM_CONFIG_LOGLEVEL: verbose
               run: |
                   echo "Publishing to NPM"
                   npm publish --provenance
