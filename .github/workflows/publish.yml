@@ -140,11 +140,10 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: '24'
-                  registry-url: 'https://registry.npmjs.org'
                   package-manager-cache: false
 
             - name: Use trusted publishing capable npm
-              run: npm install -g "npm@^11.5.1"
+              run: npm install -g npm@latest
 
             - name: Verify trusted publishing context
               run: |
@@ -166,7 +165,7 @@ jobs:
 
                   node <<'NODE'
                   const packageJson = require('./package.json');
-                  const expectedRepository = `https://github.com/${process.env.GITHUB_REPOSITORY}`;
+                  const expectedRepository = `git+https://github.com/${process.env.GITHUB_REPOSITORY}.git`;
                   const actualRepository = packageJson.repository?.url;
 
                   if (actualRepository !== expectedRepository) {
@@ -176,9 +175,14 @@ jobs:
                   NODE
 
             - name: Publish package on NPM
+              env:
+                  NODE_AUTH_TOKEN: ''
               run: |
                   echo "Publishing to NPM"
-                  npm publish
+                  unset NODE_AUTH_TOKEN
+                  npm config delete //registry.npmjs.org/:_authToken --location=user || true
+                  npm config delete always-auth --location=user || true
+                  npm publish --provenance
 
             - name: Publish to Github Packages
               run: |
