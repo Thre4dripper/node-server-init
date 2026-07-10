@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Thre4dripper/node-server-init"
+        "url": "git+https://github.com/Thre4dripper/node-server-init.git"
     },
     "scripts": {
         "build": "tsc",
@@ -16,7 +16,10 @@
         "format": "prettier --write ."
     },
     "bin": {
-        "node-server-init": "./dist/index.js"
+        "node-server-init": "dist/index.js"
+    },
+    "publishConfig": {
+        "provenance": true
     },
     "keywords": [
         "cli",
