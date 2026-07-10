@@ -143,7 +143,16 @@ jobs:
                   package-manager-cache: false
 
             - name: Use trusted publishing capable npm
-              run: npm install -g npm@latest
+              run: |
+                  npm install -g npm@11.12.1 sigstore
+                  npm --version
+                  NPM_ROOT="$(npm root -g)"
+                  NPM_ROOT="$NPM_ROOT" node <<'NODE'
+                  const path = require('node:path');
+                  const { createRequire } = require('node:module');
+                  const requireFromProvenance = createRequire(path.join(process.env.NPM_ROOT, 'npm/node_modules/libnpmpublish/lib/provenance.js'));
+                  console.log(`sigstore OK: ${requireFromProvenance.resolve('sigstore')}`);
+                  NODE
 
             - name: Verify trusted publishing context
               run: |
