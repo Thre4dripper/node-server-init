@@ -127,6 +127,9 @@ jobs:
         if: needs.build.result == 'success'
         runs-on: ubuntu-latest
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
             - name: Get build artifact
               uses: actions/download-artifact@v4
               with:
@@ -138,6 +141,39 @@ jobs:
               with:
                   node-version: '24'
                   registry-url: 'https://registry.npmjs.org'
+                  package-manager-cache: false
+
+            - name: Use trusted publishing capable npm
+              run: npm install -g "npm@^11.5.1"
+
+            - name: Verify trusted publishing context
+              run: |
+                  node --version
+                  npm --version
+                  echo "GitHub repository: $GITHUB_REPOSITORY"
+                  echo "GitHub workflow ref: $GITHUB_WORKFLOW_REF"
+                  echo "Package repository: $(node -p "require('./package.json').repository.url")"
+
+                  if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+                    echo "::error::Missing ACTIONS_ID_TOKEN_REQUEST_URL. Check id-token: write permission on this job."
+                    exit 1
+                  fi
+
+                  if [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+                    echo "::error::Missing ACTIONS_ID_TOKEN_REQUEST_TOKEN. Check id-token: write permission on this job."
+                    exit 1
+                  fi
+
+                  node <<'NODE'
+                  const packageJson = require('./package.json');
+                  const expectedRepository = `https://github.com/${process.env.GITHUB_REPOSITORY}`;
+                  const actualRepository = packageJson.repository?.url;
+
+                  if (actualRepository !== expectedRepository) {
+                    console.error(`::error::package.json repository.url must be ${expectedRepository}, got ${actualRepository}`);
+                    process.exit(1);
+                  }
+                  NODE
 
             - name: Publish package on NPM
               run: |
