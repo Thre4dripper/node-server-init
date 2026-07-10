@@ -140,19 +140,13 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: '24'
+                  registry-url: 'https://registry.npmjs.org'
                   package-manager-cache: false
 
             - name: Use trusted publishing capable npm
               run: |
-                  npm install -g npm@11.12.1 sigstore
+                  npm install -g npm@11.12.1
                   npm --version
-                  NPM_ROOT="$(npm root -g)"
-                  NPM_ROOT="$NPM_ROOT" node <<'NODE'
-                  const path = require('node:path');
-                  const { createRequire } = require('node:module');
-                  const requireFromProvenance = createRequire(path.join(process.env.NPM_ROOT, 'npm/node_modules/libnpmpublish/lib/provenance.js'));
-                  console.log(`sigstore OK: ${requireFromProvenance.resolve('sigstore')}`);
-                  NODE
 
             - name: Verify trusted publishing context
               run: |
@@ -183,32 +177,10 @@ jobs:
                   }
                   NODE
 
-            - name: Exchange OIDC token for npm token
-              run: |
-                  PACKAGE_NAME="$(node -p "encodeURIComponent(require('./package.json').name)")"
-                  GITHUB_OIDC_RESPONSE="$RUNNER_TEMP/github-oidc-token.json"
-                  NPM_TOKEN_RESPONSE="$RUNNER_TEMP/npm-oidc-token.json"
-
-                  curl --fail-with-body --silent --show-error \
-                    --header "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-                    "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" \
-                    --output "$GITHUB_OIDC_RESPONSE"
-
-                  OIDC_TOKEN="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).value" "$GITHUB_OIDC_RESPONSE")"
-
-                  curl --fail-with-body --silent --show-error \
-                    --request POST \
-                    --header "Authorization: Bearer $OIDC_TOKEN" \
-                    "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/$PACKAGE_NAME" \
-                    --output "$NPM_TOKEN_RESPONSE"
-
-                  NPM_TOKEN="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).token" "$NPM_TOKEN_RESPONSE")"
-                  echo "::add-mask::$NPM_TOKEN"
-                  echo "NODE_AUTH_TOKEN=$NPM_TOKEN" >> "$GITHUB_ENV"
-                  echo "NPM_CONFIG_USERCONFIG=$RUNNER_TEMP/.npmrc" >> "$GITHUB_ENV"
-                  printf '//registry.npmjs.org/:_authToken=%s\nprovenance=true\n' "$NPM_TOKEN" > "$RUNNER_TEMP/.npmrc"
-
             - name: Publish package on NPM
+              env:
+                  NODE_AUTH_TOKEN: ''
+                  NPM_CONFIG_PROVENANCE: true
               run: |
                   echo "Publishing to NPM"
                   npm publish --provenance
