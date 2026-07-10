@@ -183,14 +183,34 @@ jobs:
                   }
                   NODE
 
+            - name: Exchange OIDC token for npm token
+              run: |
+                  PACKAGE_NAME="$(node -p "encodeURIComponent(require('./package.json').name)")"
+                  GITHUB_OIDC_RESPONSE="$RUNNER_TEMP/github-oidc-token.json"
+                  NPM_TOKEN_RESPONSE="$RUNNER_TEMP/npm-oidc-token.json"
+
+                  curl --fail-with-body --silent --show-error \
+                    --header "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                    "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" \
+                    --output "$GITHUB_OIDC_RESPONSE"
+
+                  OIDC_TOKEN="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).value" "$GITHUB_OIDC_RESPONSE")"
+
+                  curl --fail-with-body --silent --show-error \
+                    --request POST \
+                    --header "Authorization: Bearer $OIDC_TOKEN" \
+                    "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/$PACKAGE_NAME" \
+                    --output "$NPM_TOKEN_RESPONSE"
+
+                  NPM_TOKEN="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).token" "$NPM_TOKEN_RESPONSE")"
+                  echo "::add-mask::$NPM_TOKEN"
+                  echo "NODE_AUTH_TOKEN=$NPM_TOKEN" >> "$GITHUB_ENV"
+                  echo "NPM_CONFIG_USERCONFIG=$RUNNER_TEMP/.npmrc" >> "$GITHUB_ENV"
+                  printf '//registry.npmjs.org/:_authToken=%s\nprovenance=true\n' "$NPM_TOKEN" > "$RUNNER_TEMP/.npmrc"
+
             - name: Publish package on NPM
-              env:
-                  NODE_AUTH_TOKEN: ''
               run: |
                   echo "Publishing to NPM"
-                  unset NODE_AUTH_TOKEN
-                  npm config delete //registry.npmjs.org/:_authToken --location=user || true
-                  npm config delete always-auth --location=user || true
                   npm publish --provenance
 
             - name: Publish to Github Packages
